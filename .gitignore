@@ -1,0 +1,13 @@
+/Debug/
+/Release
+/.settings
+/Doxygen/*
+!/Doxygen/Doxyfile.ini
+*.launch
+*.mex
+/.idea/
+/cmake-build-debug/
+/CMakeLists.txt
+.metadata/
+source/.idea/
+source/main.c
