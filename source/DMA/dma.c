@@ -11,6 +11,7 @@
 #define DMA_AMOUNT_CHANNELS	16
 
 static void dma_mux_init(dma_mux_conf_t config);
+inline static void change_erq_flag(int channel_number, bool value);
 
 void dma_init(){
 
@@ -34,40 +35,30 @@ static void dma_mux_init(dma_mux_conf_t config){
 profile.*/
 void dma_set_config_channel(dma_conf_t config){
 	//	dma_mux_conf_t mux_conf = {0, true, true, 0x00};	//channel, dma_enable, trigger_enable, source
-	dma_mux_init(mux_conf);
+	dma_mux_init(config.dma_mux_conf);
 
 	DMA_Type * dma = DMA0;
 
 	change_erq_flag(config.dma_mux_conf.channel_number, true);
 
-	//TENDRIA QUE HACER EL NVIC!!!
-	//DMA_CHN_IRQS { { DMA0_IRQn, DMA1_IRQn, DMA2_IRQn, DMA3_IRQn, DMA4_IRQn, DMA5_IRQn, DMA6_IRQn, DMA7_IRQn, DMA8_IRQn, DMA9_IRQn, DMA10_IRQn, DMA11_IRQn, DMA12_IRQn, DMA13_IRQn, DMA14_IRQn, DMA15_IRQn } }
+	dma->TCD[config.dma_mux_conf.channel_number].SADDR = config.source_address;
+	dma->TCD[config.dma_mux_conf.channel_number].DADDR = config.destination_address;
 
-	dma->TCD[config.dma_mux_conf.channel_number]->SADDR = config.source_address;
-	dma->TCD[config.dma_mux_conf.channel_number]->DADDR = config.destination_address;
+	dma->TCD[config.dma_mux_conf.channel_number].SOFF = config.source_offset;
+	dma->TCD[config.dma_mux_conf.channel_number].DOFF = config.destination_offset;
 
-	dma->TCD[config.dma_mux_conf.channel_number]->SOFF = config.source_offset;
-	dma->TCD[config.dma_mux_conf.channel_number]->DOFF = config.destination_offset;
+	dma->TCD[config.dma_mux_conf.channel_number].ATTR = DMA_ATTR_SSIZE(config.source_data_transfer_size)| DMA_ATTR_DSIZE(config.destination_data_transfer_size);
+	//number of bytes to be transferred in each service request
 
-		/*
-		   	000 8-bit
-			001 16-bit
-			010 32-bit
-			011 Reserved
-			100 16-byte burst
-			101 32-byte burst
-		 */
-	//	dma->TCD[0]->ATTR = DMA_ATTR_SSIZE(x)| DMA_ATTR_DSIZE(x);
-		//number of bytes to be transferred in each service request
-	//	dma->TCD[0]->NBYTES_MLNO = DMA_NBYTES_MLNO_NBYTES(x)
+	dma->TCD[config.dma_mux_conf.channel_number].NBYTES_MLNO = DMA_NBYTES_MLNO_NBYTES(config.nbytes);
 
 	//	The current major iteration count (CITER) and the beginning iteration count (BITER)
 	//	must be initialized to the same value.
 
-	//	dma->TCD[0]->CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(x);
-	//	dma->TCD[0]->BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(x);
-	//	dma->TCD[0]->SLAST |= DMA_SLAST_SLAST(x);	//source address adjustment
-	//	dma->TCD[0]->DLAST_SGA |= DMA_DLAST_SGA_DLASTSGA(x);	//destination address adjustment
+	dma->TCD[config.dma_mux_conf.channel_number].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(config.citer);
+	dma->TCD[config.dma_mux_conf.channel_number].BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(config.citer);
+	dma->TCD[config.dma_mux_conf.channel_number].SLAST |= DMA_SLAST_SLAST(config.source_address_adjustment);
+	dma->TCD[config.dma_mux_conf.channel_number].DLAST_SGA |= DMA_DLAST_SGA_DLASTSGA(config.destination_address_adjustment);
 		//sets bandwidth control to no engine stalls.
 		/*1 The current channel’s TCD specifies a scatter gather format.
 		The DLASTSGA field provides a memory pointer to the next TCD to be loaded
@@ -80,7 +71,12 @@ void dma_set_config_channel(dma_conf_t config){
 		//	Enable an interrupt when major iteration count completes
 		//1 starts the channel explicitly by software!
 
-	//	dma->TCD[0]->CSR = DMA_CSR_BWC(0x00) | DMA_CSR_MAJORLINKCH(x) | DMA_CSR_MAJORELINK(x) | DMA_CSR_ESG(x) | DMA_CSR_DREQ(x) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | dma->TCD[0]->CSR = DMA_CSR_START(0);
+	dma->TCD[config.dma_mux_conf.channel_number].CSR = DMA_CSR_BWC(0x00) |
+			DMA_CSR_MAJORLINKCH(0x00) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
+			DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
+
+	//TENDRIA QUE HACER EL NVIC!!!
+	//DMA_CHN_IRQS { { DMA0_IRQn, DMA1_IRQn, DMA2_IRQn, DMA3_IRQn, DMA4_IRQn, DMA5_IRQn, DMA6_IRQn, DMA7_IRQn, DMA8_IRQn, DMA9_IRQn, DMA10_IRQn, DMA11_IRQn, DMA12_IRQn, DMA13_IRQn, DMA14_IRQn, DMA15_IRQn } }
 }
 
 
@@ -100,7 +96,7 @@ inline static void change_erq_flag(int channel_number, bool value){
 														DMA_ERQ_ERQ15_SHIFT };
 
 	if( (channel_number >= 0) && (channel_number < DMA_AMOUNT_CHANNELS) )
-		dma->ERQ ^= (-newbit ^ dma->ERQ) & dma_channel_shifts[channel_number];
+		DMA0->ERQ ^= (-newbit ^ DMA0->ERQ) & dma_channel_shifts[channel_number];
 	else
 		HardFault_Handler();
 }
