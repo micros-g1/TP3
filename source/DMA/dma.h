@@ -44,5 +44,5 @@ typedef struct{
 
 void dma_init();
 void dma_set_config_channel(dma_conf_t config);
-
+bool dma_get_finished_transfer(int channel);
 #endif /* DMA_DMA_H_ */
