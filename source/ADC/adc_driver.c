@@ -4,9 +4,7 @@ void adc_init(){
 	/* Clock Gating */
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 
-	/* Input channel select
-	 *  - DADP0
-	 * */
+	/* Input channel select */
 	ADC0->SC1[0] &= ~ADC_SC1_ADCH_MASK;
 
 	/* 16 bit conversion */
@@ -53,9 +51,7 @@ uint16_t adc_get_data(){
 }
 
 void adc_trigger_conversion(){
-	/* Input channel select
-	 *  - DADP0
-	 * */
+	/* Input channel select */
 	ADC0->SC1[0] &= ~ADC_SC1_ADCH_MASK;
 }
 

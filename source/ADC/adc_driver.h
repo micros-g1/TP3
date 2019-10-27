@@ -10,6 +10,9 @@
  *  - Reference Vrefh y Vrefl
  * */
 
+#define ADC_MIN_DIGITAL_VALUE	0
+#define ADC_MAX_DIGITAL_VALUE	65535
+
 /**
  * @enum adc_trigger_enum
  * @brief ADC trigger source options

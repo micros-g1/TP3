@@ -12,7 +12,9 @@
 #include "stdbool.h"
 #include "MK64F12.h"
 
-#define DAC_BUFFER_SIZE	16
+#define DAC_BUFFER_SIZE			16
+#define DAC_MIN_DIGITAL_VALUE	0
+#define DAC_MAX_DIGITAL_VALUE	4095
 
 /**
  * @struct dac_irq_config_t

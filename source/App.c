@@ -9,6 +9,8 @@
  ******************************************************************************/
 
 #include "DAC/dac_driver.h"
+#include "ADC/adc_driver.h"
+#include "VREF/vref_driver.h"
 #include "math.h"
 
 /*******************************************************************************
@@ -20,6 +22,7 @@
  ******************************************************************************/
 static void delayLoop(uint32_t veces);
 int min(int x, int y);
+float map_to_range(float a, float b, float c, float d, float x);
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -32,23 +35,24 @@ uint16_t value;
 void App_Init (void)
 {
 	/* DAC TEST */
+	vref_init();
+	adc_init();
+	adc_enable_continous_conversion(true);
+	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
+	adc_trigger_conversion();
 	dac_init();
-	dac_setup_buffer(DAC_BUFFER_NORMAL);
-	double h = M_PI/DAC_BUFFER_SIZE;
-	for (int i = 0; i < DAC_BUFFER_SIZE; i++){
-		double f_val = sin(h*i);
-		uint16_t q_val = (uint16_t)(min(4095, (int)(f_val * 4096.0)));
-		dac_write_to_buffer(i, q_val);
-	}
-	dac_trigger_select(DAC_SOFTWARE_TRIGGER);
+	dac_setup_buffer(DAC_BUFFER_DISABLED);
 	dac_enable(true);
 }
 
 
 void App_Run (void)
 {
-	dac_trigger();
-	delayLoop(1000000U);
+	if(adc_conversion_completed()){
+		uint16_t adc_data = adc_get_data();
+		uint16_t dac_data = map_to_range(0, ADC_MAX_DIGITAL_VALUE, 0, DAC_MAX_DIGITAL_VALUE, adc_data);
+		dac_write_to_buffer(0, dac_data);
+	}
 }
 
 /*******************************************************************************
@@ -63,6 +67,11 @@ static void delayLoop(uint32_t veces)
 
 int min(int x, int y){
   return (x < y) ? x : y;
+}
+
+float map_to_range(float a, float b, float c, float d, float x){
+	float ret = c + (d-c)/(b-a) * (x - a);
+	return ret;
 }
 
 /*******************************************************************************
