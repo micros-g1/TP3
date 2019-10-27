@@ -70,10 +70,10 @@ void dma_set_config_channel(dma_conf_t config){
 			1 The channel’s ERQ bit is cleared when the major loop is complete*/
 		//	Enable an interrupt when major iteration count completes
 		//1 starts the channel explicitly by software!
-
+	dma->TCD[config.dma_mux_conf.channel_number].CSR = 0X00;
 	dma->TCD[config.dma_mux_conf.channel_number].CSR = DMA_CSR_BWC(0x00) |
-			DMA_CSR_MAJORLINKCH(0x00) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
-			DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
+			DMA_CSR_MAJORLINKCH(config.dma_mux_conf.channel_number) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
+			DMA_CSR_DREQ(0x01) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
 
 	//TENDRIA QUE HACER EL NVIC!!!
 	//DMA_CHN_IRQS { { DMA0_IRQn, DMA1_IRQn, DMA2_IRQn, DMA3_IRQn, DMA4_IRQn, DMA5_IRQn, DMA6_IRQn, DMA7_IRQn, DMA8_IRQn, DMA9_IRQn, DMA10_IRQn, DMA11_IRQn, DMA12_IRQn, DMA13_IRQn, DMA14_IRQn, DMA15_IRQn } }
@@ -101,5 +101,10 @@ inline static void change_erq_flag(int channel_number, bool value){
 		HardFault_Handler();
 }
 
+bool dma_get_finished_transfer(int channel){
+	if((channel < 0) || (channel >= DMA_AMOUNT_CHANNELS))
+		HardFault_Handler();
 
+	return (DMA0->TCD[channel].CSR) & DMA_CSR_DONE_MASK;
+}
 

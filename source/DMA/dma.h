@@ -34,6 +34,14 @@ typedef struct{
 	uint8_t destination_address_adjustment;
 }dma_conf_t;
 
+
+typedef struct{
+	uint8_t bandwitch_control;
+	bool channel_to_channel_linking;
+	bool enable_scatter_gather;
+	bool enable_request;
+}dma_control_and_status_conf_t;
+
 void dma_init();
 void dma_set_config_channel(dma_conf_t config);
 
