@@ -6,13 +6,13 @@
  * @details
  * Dac interface header
  */
-
 #ifndef DAC_DRIVER_H
 #define DAC_DRIVER_H
 
-#include "MK64F12.h"
 #include "stdbool.h"
+#include "MK64F12.h"
 
+#define DAC_BUFFER_SIZE	16
 
 /**
  * @struct dac_irq_config_t
@@ -39,7 +39,7 @@ typedef enum{
  */
 typedef enum{
 	DAC_HARDWARE_TRIGGER,	///< @brief Hardware trigger
-	DAC_SOFTWARE_TRIGGER	///< @biref Software trigger
+	DAC_SOFTWARE_TRIGGER	///< @brief Software trigger
 }dac_trigger_enum;
 
 /**
@@ -88,13 +88,13 @@ void dac_setup_buffer(dac_buffer_config_enum buffer_config);
 /**
  * @brief Sets the value of the specified buffer position
  * @param pos Indicates the index of the buffer to be set
- * @param value The value to be loaded.
+ * @param enable The value to be loaded.
  */
 void dac_write_to_buffer(uint8_t pos, uint16_t enable);
 
 /**
  * @brief Enable or disable the DMA interrupts
- * @param value Boolean value
+ * @param enable Boolean value
  *  - true: Enable DMA
  *  - false: Disable DMA
  */
@@ -111,19 +111,19 @@ void dac_setup_irq(dac_irq_config_t irq_config);
 
 /**
  * @brief Set the handler for the Buffer Watermark Interrupt
- * @param callback Function called when interrutp occurs
+ * @param callback Function called when interrupt occurs
  */
 void dac_set_watermark_irq_handler(dac_watermark_callback_t callback);
 
 /**
  * @brief Set the handler for the Buffer Read Pointer Top Flag Interrupt
- * @param callback Function called when interrutp occurs
+ * @param callback Function called when interrupt occurs
  */
 void dac_set_read_pointer_top_irq_handler(dac_read_ptr_top_callback_t callback);
 
 /**
  * @brief Set the handler for the Buffer Read Pointer Bottom Flag Interrupt
- * @param callback Function called when interrutp occurs
+ * @param callback Function called when interrupt occurs
  */
 void dac_set_read_pointer_botom_irq_handler(dac_read_ptr_bottom_callback_t callback);
 
@@ -134,8 +134,15 @@ void dac_set_read_pointer_botom_irq_handler(dac_read_ptr_bottom_callback_t callb
 void dac_trigger_select(dac_trigger_enum trigger_type);
 
 /**
- * @brief Triggers the output and advance the buffer (only if buffer enabled and software trigger selected)
+ * @brief Triggers the output
+ * @details Sets the output to th word pointed by read poonter and advance the buffer (only if buffer enabled and software trigger selected)
  */
 void dac_trigger_output();
+
+/**
+ * @brief DAC0 data register address
+ * @return returns a uint32_t with the DAC0 Result address
+ */
+uint32_t dac_data_result_address();
 
 #endif

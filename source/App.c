@@ -9,15 +9,17 @@
  ******************************************************************************/
 
 #include "DAC/dac_driver.h"
+#include "math.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
+#define M_PI 3.14159265358979323846
 /******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static void delayLoop(uint32_t veces);
+int min(int x, int y);
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -31,14 +33,22 @@ void App_Init (void)
 {
 	/* DAC TEST */
 	dac_init();
-	value = 0;
+	dac_setup_buffer(DAC_BUFFER_NORMAL);
+	double h = M_PI/DAC_BUFFER_SIZE;
+	for (int i = 0; i < DAC_BUFFER_SIZE; i++){
+		double f_val = sin(h*i);
+		uint16_t q_val = (uint16_t)(min(4095, (int)(f_val * 4096.0)));
+		dac_write_to_buffer(i, q_val);
+	}
+	dac_trigger_select(DAC_SOFTWARE_TRIGGER);
+	dac_enable(true);
 }
 
 
 void App_Run (void)
 {
-	/* DAC TEST*/
-	dac_write_to_buffer(0, value++);
+	dac_trigger();
+	delayLoop(1000000U);
 }
 
 /*******************************************************************************
@@ -46,7 +56,14 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+static void delayLoop(uint32_t veces)
+{
+    while (veces--);
+}
 
+int min(int x, int y){
+  return (x < y) ? x : y;
+}
 
 /*******************************************************************************
  ******************************************************************************/

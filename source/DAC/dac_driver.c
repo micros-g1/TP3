@@ -1,7 +1,9 @@
-#include "dac_driver.h"
-#include "stdlib.h"
+#include <stdlib.h>
 
-#define DAC_DATL_DATA0_WIDTH 8
+#include "dac_driver.h"
+
+#define DAC_DATL_DATA0_WIDTH	8
+
 
 dac_watermark_callback_t watermark_callback;
 dac_read_ptr_bottom_callback_t bottom_callback;
@@ -133,3 +135,6 @@ void DAC0_IRQHandler(){
 	NVIC_EnableIRQ(DAC0_IRQn);
 }
 
+uint32_t dac_data_result_address(){
+	return (uint32_t)&(DAC0->DAT[0].DATL);
+}
