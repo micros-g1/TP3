@@ -10,10 +10,11 @@
 #include <stddef.h>
 
 static pit_callback irq_callbacks[AMOUNT_PIT_CH] = {NULL, NULL, NULL, NULL};
+static const pit_irqs[AMOUNT_PIT_CH] = {PIT0_IRQn, PIT1_IRQn, PIT2_IRQn, PIT3_IRQn};
 
 void pit_init(){
 	static bool initialized = false;
-	if(!initialized) return;
+	if(initialized) return;
 
 	SIM->SCGC6 |= SIM_SCGC6_PIT(1);		//clock gating
 
@@ -21,15 +22,16 @@ void pit_init(){
 		Disables the standard timers. This field must be enabled before any other setup is done.
 		0 Clock for standard PIT timers is enabled.
 		1 Clock for standard PIT timers is disabled.*/
-	PIT->MCR = PIT_MCR_MDIS(1);
+	PIT->MCR &= ~PIT_MCR_MDIS_MASK;
 
 	initialized = true;
 }
 
 void pit_set_channel_conf(pit_conf_t conf){
+	NVIC_EnableIRQ(pit_irqs[conf.channel]);
 
-		PIT->CHANNEL[conf.channel].TCTRL = 0x00;
-		PIT->CHANNEL[conf.channel].TCTRL = PIT_TCTRL_CHN(conf.chain_mode)| PIT_TCTRL_TIE(conf.timer_interrupt_enable) |
+	PIT->CHANNEL[conf.channel].TCTRL = 0x00;
+	PIT->CHANNEL[conf.channel].TCTRL = PIT_TCTRL_CHN(conf.chain_mode)| PIT_TCTRL_TIE(conf.timer_interrupt_enable) |
 											PIT_TCTRL_TEN(conf.timer_enable);
 
 		/*		Timer Start Value
@@ -37,7 +39,7 @@ void pit_set_channel_conf(pit_conf_t conf){
 				load this register value again. Writing a new value to this register will not restart the timer; instead the
 				value will be loaded after the timer expires. To abort the current cycle and start a timer period with the new
 				value, the timer must be disabled and enabled again.*/
-		PIT->CHANNEL[conf.channel].LDVAL = PIT_LDVAL_TSV(conf.timer_count);
+	PIT->CHANNEL[conf.channel].LDVAL = PIT_LDVAL_TSV(conf.timer_count);
 }
 
 inline uint32_t pit_get_curr_timer_value(pit_channels_t channel){

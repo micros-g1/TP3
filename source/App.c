@@ -36,10 +36,6 @@ void App_Init (void)
 {
 	/* DAC TEST */
 	vref_init();
-	adc_init();
-	adc_enable_continous_conversion(true);
-	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
-	adc_trigger_conversion();
 	dac_init();
 	dac_setup_buffer(DAC_BUFFER_DISABLED);
 	dac_enable(true);

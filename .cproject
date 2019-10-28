@@ -238,7 +238,6 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>

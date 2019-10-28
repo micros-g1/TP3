@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 typedef enum{DMA_8BIT = 0x00, DMA_16BIT = 0x01, DMA_32BIT = 0x02, DMA_16BYTE_BURST = 0x4, DMA_32BYTE_BURST = 0x05} dma_transfer_size_t;
-
+typedef enum {DMA_FTM_} dma_sources_t;
 typedef struct{
 	int channel_number;
 	bool dma_enable;
@@ -36,7 +36,7 @@ typedef struct{
 
 
 typedef struct{
-	uint8_t bandwitch_control;
+	uint8_t bandwidth_control;
 	bool channel_to_channel_linking;
 	bool enable_scatter_gather;
 	bool enable_request;
