@@ -11,7 +11,9 @@
 #include "DAC/dac_driver.h"
 #include "ADC/adc_driver.h"
 #include "VREF/vref_driver.h"
-#include "math.h"
+#include "pit.h"
+#include "gpio.h"
+#include "board.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -23,6 +25,7 @@
 static void delayLoop(uint32_t veces);
 int min(int x, int y);
 float map_to_range(float a, float b, float c, float d, float x);
+void pin_toogle(void);
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -39,16 +42,16 @@ void App_Init (void)
 	dac_init();
 	dac_setup_buffer(DAC_BUFFER_DISABLED);
 	dac_enable(true);
+	gpioMode(PIN_LED_BLUE, OUTPUT);
+	pit_init();
+	pit_conf_t conf = {.callback=pin_toogle, .chain_mode=false, .channel=0,.timer_enable=true, .timer_count=0x01, .timer_interrupt_enable=true};
+	pit_set_channel_conf(conf);
 }
 
 
 void App_Run (void)
 {
-	if(adc_conversion_completed()){
-		uint16_t adc_data = adc_get_data();
-		uint16_t dac_data = map_to_range(0, ADC_MAX_DIGITAL_VALUE, 0, DAC_MAX_DIGITAL_VALUE, adc_data);
-		dac_write_to_buffer(0, dac_data);
-	}
+
 }
 
 /*******************************************************************************
@@ -56,6 +59,15 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+void pin_toogle(void){
+	static bool initialized = false;
+	if(initialized) return;
+
+	gpioToggle(PIN_LED_BLUE);
+
+	initialized = true;
+}
 static void delayLoop(uint32_t veces)
 {
     while (veces--);
