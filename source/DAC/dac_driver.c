@@ -135,6 +135,6 @@ void DAC0_IRQHandler(){
 	NVIC_EnableIRQ(DAC0_IRQn);
 }
 
-uint32_t dac_data_result_address(){
+uint32_t dac_read_data_address(){
 	return (uint32_t)&(DAC0->DAT[0].DATL);
 }

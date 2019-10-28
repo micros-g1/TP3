@@ -11,7 +11,10 @@
 #include "DAC/dac_driver.h"
 #include "ADC/adc_driver.h"
 #include "VREF/vref_driver.h"
-#include "math.h"
+#include "PIT/pit.h"
+#include "board.h"
+#include "gpio.h"
+#include "stdlib.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -23,6 +26,7 @@
 static void delayLoop(uint32_t veces);
 int min(int x, int y);
 float map_to_range(float a, float b, float c, float d, float x);
+void toggle_pin();
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -30,29 +34,21 @@ float map_to_range(float a, float b, float c, float d, float x);
  ******************************************************************************/
 
 uint16_t value;
-
+bool state;
 /* Función que se llama una vez, al comienzo del programa */
 void App_Init (void)
 {
-	/* DAC TEST */
-	vref_init();
-	adc_init();
-	adc_enable_continous_conversion(true);
-	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
-	adc_trigger_conversion();
-	dac_init();
-	dac_setup_buffer(DAC_BUFFER_DISABLED);
-	dac_enable(true);
+	state = true;
+	gpioMode(PIN_LED_BLUE, OUTPUT);
+	pit_init();
+	pit_conf_t config = {.callback=toggle_pin, .chain_mode=false, .channel=PIT_CH0, .timer_count=0xFFFF, .timer_enable=true, .timer_interrupt_enable=true};
+	pit_set_channel_conf(config);
 }
 
 
 void App_Run (void)
 {
-	if(adc_conversion_completed()){
-		uint16_t adc_data = adc_get_data();
-		uint16_t dac_data = map_to_range(0, ADC_MAX_DIGITAL_VALUE, 0, DAC_MAX_DIGITAL_VALUE, adc_data);
-		dac_write_to_buffer(0, dac_data);
-	}
+
 }
 
 /*******************************************************************************
@@ -74,5 +70,11 @@ float map_to_range(float a, float b, float c, float d, float x){
 	return ret;
 }
 
+void toggle_pin(){
+	static bool initialized = false;
+	if(initialized) return;
+	gpioToggle(PIN_LED_BLUE);
+	initialized = true;
+}
 /*******************************************************************************
  ******************************************************************************/

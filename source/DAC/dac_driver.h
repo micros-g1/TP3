@@ -92,7 +92,7 @@ void dac_setup_buffer(dac_buffer_config_enum buffer_config);
  * @param pos Indicates the index of the buffer to be set
  * @param enable The value to be loaded.
  */
-void dac_write_to_buffer(uint8_t pos, uint16_t enable);
+void dac_write_to_buffer(uint8_t pos, uint16_t data);
 
 /**
  * @brief Enable or disable the DMA interrupts
@@ -145,6 +145,6 @@ void dac_trigger_output();
  * @brief DAC0 data register address
  * @return returns a uint32_t with the DAC0 Result address
  */
-uint32_t dac_data_result_address();
+uint32_t dac_read_data_address();
 
 #endif

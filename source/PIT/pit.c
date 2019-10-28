@@ -13,7 +13,7 @@ static pit_callback irq_callbacks[AMOUNT_PIT_CH] = {NULL, NULL, NULL, NULL};
 
 void pit_init(){
 	static bool initialized = false;
-	if(!initialized) return;
+	if(initialized) return;
 
 	SIM->SCGC6 |= SIM_SCGC6_PIT(1);		//clock gating
 
