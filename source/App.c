@@ -11,7 +11,7 @@
 #include "DAC/dac_driver.h"
 #include "ADC/adc_driver.h"
 #include "VREF/vref_driver.h"
-#include "pit.h"
+#include "PIT/pit.h"
 #include "gpio.h"
 #include "board.h"
 
