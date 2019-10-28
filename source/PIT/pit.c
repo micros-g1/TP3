@@ -29,7 +29,6 @@ void pit_init(){
 
 void pit_set_channel_conf(pit_conf_t conf){
 	NVIC_EnableIRQ(pit_irqs[conf.channel]);
-
 	PIT->CHANNEL[conf.channel].TCTRL = 0x00;
 	PIT->CHANNEL[conf.channel].TCTRL = PIT_TCTRL_CHN(conf.chain_mode)| PIT_TCTRL_TIE(conf.timer_interrupt_enable) |
 											PIT_TCTRL_TEN(conf.timer_enable);
@@ -40,6 +39,7 @@ void pit_set_channel_conf(pit_conf_t conf){
 				value will be loaded after the timer expires. To abort the current cycle and start a timer period with the new
 				value, the timer must be disabled and enabled again.*/
 	PIT->CHANNEL[conf.channel].LDVAL = PIT_LDVAL_TSV(conf.timer_count);
+	irq_callbacks[conf.channel] = conf.callback;
 }
 
 inline uint32_t pit_get_curr_timer_value(pit_channels_t channel){
