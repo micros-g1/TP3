@@ -62,7 +62,6 @@ void PIT0_IRQHandler(void){
 void PIT1_IRQHandler(void){
 	if(irq_callbacks[PIT_CH1] != NULL)
 		irq_callbacks[PIT_CH1]();
-
 }
 void PIT2_IRQHandler(void){
 	if(irq_callbacks[PIT_CH2] != NULL)
