@@ -19,6 +19,8 @@
  *****************************************************/
 static FTM_Type * ftms[FTM_AMOUNT_MODULES] = FTM_BASE_PTRS;
 static ftm_irq_callback_t irq_callbacks[FTM_AMOUNT_MODULES][FTM_AMOUNT_CHANNELS];
+static ftm_irqs[FTM_AMOUNT_MODULES] = {FTM0_IRQn, FTM1_IRQn, FTM2_IRQn, FTM3_IRQn};
+
 //for pwm configurations
 static uint32_t const pwm_combine_masks[4]= {FTM_COMBINE_COMBINE0_MASK, FTM_COMBINE_COMBINE1_MASK,
 							FTM_COMBINE_COMBINE2_MASK, FTM_COMBINE_COMBINE3_MASK};
@@ -35,27 +37,23 @@ void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
 	static bool initiliazed = false;
 	if(initiliazed) return;
 
-	if (module == FTM_0){
+
+	if (module == FTM_0)
 		SIM->SCGC6 |= SIM_SCGC6_FTM0_MASK;	//Clock Gating
-		NVIC_ClearPendingIRQ(FTM0_IRQn);	//IRQS
-		NVIC_EnableIRQ(FTM0_IRQn);
-	}
-	else if(module == FTM_1){
+	else if(module == FTM_1)
 		SIM->SCGC6 |= SIM_SCGC6_FTM1_MASK;	//Clock Gating
-		NVIC_ClearPendingIRQ(FTM1_IRQn);	//IRQS
-		NVIC_EnableIRQ(FTM1_IRQn);
-	}
+
 	else if (module == FTM_2){
 		SIM->SCGC6 |= SIM_SCGC6_FTM2_MASK;	//Clock Gating
 		SIM->SCGC3 |= SIM_SCGC3_FTM2_MASK;	//Clock Gating
-		NVIC_ClearPendingIRQ(FTM2_IRQn);	//IRQS
-		NVIC_EnableIRQ(FTM2_IRQn);
 	}
-	else if( module == FTM_3){
+	else if( module == FTM_3)
 		SIM->SCGC3 |= SIM_SCGC3_FTM3_MASK;	//Clock Gating
-		NVIC_ClearPendingIRQ(FTM3_IRQn);	//IRQS
-		NVIC_EnableIRQ(FTM3_IRQn);
-	}
+
+
+	NVIC_ClearPendingIRQ(ftm_irqs[module]);
+	NVIC_EnableIRQ(ftm_irqs[module]);
+
 	ftm_set_prescaler(module, prescaler_config);
 
 	initiliazed = true;
