@@ -12,10 +12,6 @@ for freq in freqs.keys():
     aux_string = np.array2string(y, separator=', ')
     aux_string = '{' + aux_string[1:len(aux_string) - 1] + ' };'
     freqs[freq] = aux_string
-    # showing the exact location of the samples
-    # plt.stem(x, y, 'r', )
-    # plt.plot(x, y)
-    # plt.show()
 
 with open("sinusoidals.h", "w") as text_file:
     text_file.write('//File generated using sin_gen.py\n\n')
