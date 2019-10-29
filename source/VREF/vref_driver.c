@@ -11,4 +11,8 @@ void vref_init(){
 	 * */
 	VREF->SC |= VREF_SC_VREFEN_MASK;
 	VREF->SC |= VREF_SC_MODE_LV(0b01);
+
+
+	/* Trim */
+	VREF->TRM |= VREF_TRM_TRIM_MASK;
 }

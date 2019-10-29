@@ -22,6 +22,7 @@ typedef enum{
 	ADC_SOFTWARE_TRIGGER	///< @biref Software trigger
 }adc_trigger_enum;
 
+typedef void (*adc_conversion_completed_callback_t)(void);
 
 /**
  * @brief ADC initialization
@@ -86,6 +87,16 @@ void adc_enable_continous_conversion(bool enable);
  */
 uint32_t adc_data_result_address();
 
+/**
+ * @brief Configures a callback for the conversion completed interrupt
+ * @param callback Function pointer to the handler
+ */
+void adc_set_conversion_completed_handler(adc_conversion_completed_callback_t callback);
 
+/**
+ * @brief Method to get SC1 register address
+ * @return Return the address of the config register.
+ */
+uint32_t adc_get_sc1_address();
 
 #endif

@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 static pit_callback irq_callbacks[AMOUNT_PIT_CH] = {NULL, NULL, NULL, NULL};
-static const pit_irqs[AMOUNT_PIT_CH] = {PIT0_IRQn, PIT1_IRQn, PIT2_IRQn, PIT3_IRQn};
+static const uint32_t pit_irqs[AMOUNT_PIT_CH] = {PIT0_IRQn, PIT1_IRQn, PIT2_IRQn, PIT3_IRQn};
 
 void pit_init(){
 	static bool initialized = false;
@@ -54,8 +54,10 @@ inline void pit_clear_timer_interrupt_flag(pit_channels_t channel){
 }
 
 void PIT0_IRQHandler(void){
+	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF(1);
 	if(irq_callbacks[PIT_CH0] != NULL)
 		irq_callbacks[PIT_CH0]();
+
 }
 void PIT1_IRQHandler(void){
 	if(irq_callbacks[PIT_CH1] != NULL)

@@ -39,7 +39,8 @@ void dma_set_config_channel(dma_conf_t config){
 
 	DMA_Type * dma = DMA0;
 
-	change_erq_flag(config.dma_mux_conf.channel_number, true);
+	DMA0->SERQ |= DMA_SERQ_SERQ(config.dma_mux_conf.channel_number);
+	//change_erq_flag(config.dma_mux_conf.channel_number, true);
 
 	dma->TCD[config.dma_mux_conf.channel_number].SADDR = config.source_address;
 	dma->TCD[config.dma_mux_conf.channel_number].DADDR = config.destination_address;
@@ -73,7 +74,7 @@ void dma_set_config_channel(dma_conf_t config){
 	dma->TCD[config.dma_mux_conf.channel_number].CSR = 0X00;
 	dma->TCD[config.dma_mux_conf.channel_number].CSR = DMA_CSR_BWC(0x00) |
 			DMA_CSR_MAJORLINKCH(config.dma_mux_conf.channel_number) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
-			DMA_CSR_DREQ(0x01) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
+			DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
 
 	//TENDRIA QUE HACER EL NVIC!!!
 	//DMA_CHN_IRQS { { DMA0_IRQn, DMA1_IRQn, DMA2_IRQn, DMA3_IRQn, DMA4_IRQn, DMA5_IRQn, DMA6_IRQn, DMA7_IRQn, DMA8_IRQn, DMA9_IRQn, DMA10_IRQn, DMA11_IRQn, DMA12_IRQn, DMA13_IRQn, DMA14_IRQn, DMA15_IRQn } }
@@ -99,6 +100,8 @@ inline static void change_erq_flag(int channel_number, bool value){
 		DMA0->ERQ ^= (-newbit ^ DMA0->ERQ) & dma_channel_shifts[channel_number];
 	else
 		HardFault_Handler();
+
+
 }
 
 bool dma_get_finished_transfer(int channel){
