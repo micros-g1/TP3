@@ -20,9 +20,6 @@ void adc_init(){
 	ADC0->SC3 |= ADC_SC3_CAL_MASK;
 	while(ADC0->SC3 & ADC_SC3_CALF_MASK);
 
-	/* Continous Conversion */
-	ADC0->SC3 |= ADC_SC3_ADCO_MASK;
-
 	/* Harware average enable */
 	ADC0->SC3 |= ADC_SC3_AVGE_MASK;
 
@@ -86,8 +83,6 @@ void adc_set_conversion_completed_handler(adc_conversion_completed_callback_t ca
 }
 
 void ADC0_IRQHandler(void){
-	NVIC_DisableIRQ(ADC0_IRQn);
 	if(conv_completed_callback != NULL)
 		conv_completed_callback();
-	NVIC_EnableIRQ(ADC0_IRQn);
 }
