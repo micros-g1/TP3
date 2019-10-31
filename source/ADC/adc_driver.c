@@ -11,7 +11,7 @@ void adc_init(){
 	ADC0->SC1[0] &= ~ADC_SC1_ADCH_MASK;
 
 	/* Enable COCO interrupt */
-	ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
+	//ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
 
 	/* 16 bit conversion */
 	ADC0->CFG1 |= ADC_CFG1_MODE_MASK;
@@ -27,6 +27,7 @@ void adc_init(){
 	ADC0->SC3 |= ADC_SC3_AVGS(0b01);
 
 	/* Enable Interrupts */
+	NVIC_ClearPendingIRQ(ADC0_IRQn);
 	NVIC_EnableIRQ(ADC0_IRQn);
 }
 
@@ -63,7 +64,6 @@ void adc_trigger_conversion(){
 
 uint32_t adc_data_result_address(){
 	uint32_t ret = (uint32_t)&(ADC0->R[0]);
-	ret = ret + 2;
 	return ret;
 }
 

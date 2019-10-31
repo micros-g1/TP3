@@ -24,6 +24,7 @@ typedef struct{
 
 void pit_init();
 void pit_set_channel_conf(pit_conf_t conf);
+void pit_set_new_timer_countdown(pit_conf_t conf);
 inline uint32_t pit_get_curr_timer_value(pit_channels_t channel);
 inline bool pit_get_timer_interrupt_flag(pit_channels_t channel);
 inline void pit_clear_timer_interrupt_flag(pit_channels_t channel);

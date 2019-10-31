@@ -24,14 +24,16 @@ typedef struct{
 	dma_mux_conf_t dma_mux_conf;
 	uint32_t source_address;
 	uint32_t destination_address;
-	uint32_t source_offset;
-	uint32_t destination_offset;
+	int16_t source_offset;
+	int16_t destination_offset;
 	dma_transfer_size_t destination_data_transfer_size;
 	dma_transfer_size_t	source_data_transfer_size;
-	uint8_t nbytes;
+	uint32_t nbytes;
 	uint8_t citer;
-	uint8_t source_address_adjustment;
-	uint8_t destination_address_adjustment;
+	int32_t source_address_adjustment;
+	int32_t destination_address_adjustment;
+	uint8_t smod;
+	uint8_t dmod;
 }dma_conf_t;
 
 

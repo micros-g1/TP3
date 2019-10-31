@@ -8,7 +8,7 @@
 
 #include <DMA/dma.h>
 #include "MK64F12.h"
-#define DMA_AMOUNT_CHANNELS	16
+#define DMA_AMOUNT_CHANNELS	2
 
 static void dma_mux_init(dma_mux_conf_t config);
 inline static void change_erq_flag(int channel_number, bool value);
@@ -48,7 +48,8 @@ void dma_set_config_channel(dma_conf_t config){
 	dma->TCD[config.dma_mux_conf.channel_number].SOFF = config.source_offset;
 	dma->TCD[config.dma_mux_conf.channel_number].DOFF = config.destination_offset;
 
-	dma->TCD[config.dma_mux_conf.channel_number].ATTR = DMA_ATTR_SSIZE(config.source_data_transfer_size)| DMA_ATTR_DSIZE(config.destination_data_transfer_size);
+	dma->TCD[config.dma_mux_conf.channel_number].ATTR = 0x00;
+	dma->TCD[config.dma_mux_conf.channel_number].ATTR |= DMA_ATTR_SSIZE(config.source_data_transfer_size)| DMA_ATTR_DSIZE(config.destination_data_transfer_size);
 	//number of bytes to be transferred in each service request
 
 	dma->TCD[config.dma_mux_conf.channel_number].NBYTES_MLNO = DMA_NBYTES_MLNO_NBYTES(config.nbytes);
@@ -58,8 +59,8 @@ void dma_set_config_channel(dma_conf_t config){
 
 	dma->TCD[config.dma_mux_conf.channel_number].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(config.citer);
 	dma->TCD[config.dma_mux_conf.channel_number].BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(config.citer);
-	dma->TCD[config.dma_mux_conf.channel_number].SLAST |= DMA_SLAST_SLAST(config.source_address_adjustment);
-	dma->TCD[config.dma_mux_conf.channel_number].DLAST_SGA |= DMA_DLAST_SGA_DLASTSGA(config.destination_address_adjustment);
+	dma->TCD[config.dma_mux_conf.channel_number].SLAST = DMA_SLAST_SLAST(config.source_address_adjustment);
+	dma->TCD[config.dma_mux_conf.channel_number].DLAST_SGA = DMA_DLAST_SGA_DLASTSGA(config.destination_address_adjustment);
 		//sets bandwidth control to no engine stalls.
 		/*1 The current channel’s TCD specifies a scatter gather format.
 		The DLASTSGA field provides a memory pointer to the next TCD to be loaded
@@ -75,6 +76,8 @@ void dma_set_config_channel(dma_conf_t config){
 	dma->TCD[config.dma_mux_conf.channel_number].CSR = DMA_CSR_BWC(0x00) |
 			DMA_CSR_MAJORLINKCH(config.dma_mux_conf.channel_number) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
 			DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
+
+	dma->TCD[config.dma_mux_conf.channel_number].ATTR |= DMA_ATTR_SMOD(config.smod) | DMA_ATTR_DMOD(config.dmod);
 
 	//TENDRIA QUE HACER EL NVIC!!!
 	//DMA_CHN_IRQS { { DMA0_IRQn, DMA1_IRQn, DMA2_IRQn, DMA3_IRQn, DMA4_IRQn, DMA5_IRQn, DMA6_IRQn, DMA7_IRQn, DMA8_IRQn, DMA9_IRQn, DMA10_IRQn, DMA11_IRQn, DMA12_IRQn, DMA13_IRQn, DMA14_IRQn, DMA15_IRQn } }

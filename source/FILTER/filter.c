@@ -5,6 +5,7 @@
  *      Author: Tomas
  */
 #include "filter.h"
+#include "stdbool.h"
 
 //File generated using filtro.py
 
@@ -38,7 +39,7 @@ float apply_filter(float input){
 	//finished updating input vector
 
 	double result = 0;
-	for (i = 0; i < FILTER_SIZE; ++i)
+	for (int i = 0; i < FILTER_SIZE; ++i)
 		result += input_x[i]*filter_coeffs[i];
 
 	return result;
