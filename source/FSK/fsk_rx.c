@@ -165,3 +165,13 @@ void fsk_process_sample(uint16_t sample)
     }
 }
 
+void fsk_rx_disable_interrupts()
+{
+	;
+}
+
+void fsk_rx_enable_interrupts()
+{
+	;
+}
+

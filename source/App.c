@@ -7,21 +7,18 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-#include "DAC/dac_driver.h"
-#include "ADC/adc_driver.h"
-#include "VREF/vref_driver.h"
-#include "PIT/pit.h"
-#include "DMA/dma.h"
-#include "gpio.h"
 #include "board.h"
-#include "stdlib.h"
-#include "math.h"
-#include "stdbool.h"
 #include "FSK/fsk.h"
+#include "UART/uart.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+
+#define UART_ID			0
+#define UART_BAUD_RATE	9600
+
+#define BUFFER_SIZE		8
 
 /******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -33,14 +30,34 @@
  *******************************************************************************
  ******************************************************************************/
 
+static uint8_t buffer[BUFFER_SIZE];
+
+
+
+
 
 /* Función que se llama una vez, al comienzo del programa */
 void App_Init (void){
 	fskInit();
+
+	uart_cfg_t config;
+	config.baudrate = UART_BAUD_RATE;
+	config.parity = true;
+	config.odd_parity = true;
+	uartInit(UART_ID, config);
 }
 
-void App_Run (void){
+void App_Run (void)
+{
+	if (fskIsRxMsg()) {
+		uint8_t n = fskReadMsg(buffer, BUFFER_SIZE);
+		uartWriteMsg(UART_ID, buffer, n);
+	}
 
+	if (uartIsRxMsg(UART_ID)) {
+		uint8_t n = uartReadMsg(UART_ID, buffer, BUFFER_SIZE);
+		fskWriteMsg(buffer, n);
+	}
 }
 
 /*******************************************************************************

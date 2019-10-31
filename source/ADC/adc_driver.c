@@ -1,9 +1,16 @@
 #include "adc_driver.h"
 #include "stdlib.h"
+#include <stdbool.h>
 
 adc_conversion_completed_callback_t conv_completed_callback = NULL;
 
 void adc_init(){
+	static bool isinit = false;
+	if (isinit)
+		return;
+	isinit = true;
+
+
 	/* Clock Gating */
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 

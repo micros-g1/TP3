@@ -21,6 +21,8 @@ static size_t tx_total_elements, rx_total_elements;
 
 #define __MIN(x,y) ( (x) < (y) ? (x) : (y) )
 
+void __fsk_byte_received_callback(uint8_t byte);
+
 void fskInit ()
 {
 	rx_in_index = rx_out_index = 0;
@@ -29,7 +31,7 @@ void fskInit ()
 	//TODO: Enable everything else
 	fsk_tx_init(NULL);
 	fsk_tx_interrupt_enable(true);
-	fsk_rx_init(NULL);
+	fsk_rx_init(__fsk_byte_received_callback);
 }
 
 bool fskIsRxMsg()
