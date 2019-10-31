@@ -60,6 +60,13 @@ void pit_set_new_timer_countdown(pit_conf_t conf){
 	PIT->CHANNEL[conf.channel].LDVAL = PIT_LDVAL_TSV(conf.timer_count);
 }
 
+void pit_set_timer_interrupt_enabled(pit_channels_t channel, bool enabled_disabled){
+	if(enabled_disabled)
+		PIT->CHANNEL[channel].TCTRL |= PIT_TCTRL_TIE_MASK;
+	else
+		PIT->CHANNEL[channel].TCTRL &= ~PIT_TCTRL_TIE_MASK;
+}
+
 void PIT0_IRQHandler(void){
 	PIT->CHANNEL[0].TFLG |= PIT_TFLG_TIF(1);
 	if(irq_callbacks[PIT_CH0] != NULL)
