@@ -9,6 +9,7 @@
 #include <FSK/fsk_tx.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <FSK/fsk_rx.h>
 
 #define USING_ODD_PARITY true
 
@@ -33,6 +34,7 @@ void fskInit ()
 	//TODO: Enable everything else
 	fsk_tx_init(__fsk_next_bit_callback);
 	fsk_tx_interrupt_enable(true);
+	fsk_rx_init(NULL);
 }
 
 bool fskIsRxMsg()
