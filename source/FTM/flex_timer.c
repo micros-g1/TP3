@@ -181,14 +181,31 @@ void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t
 	write_mod_value(module, config.mod);
 }
 
+void ftm_set_output_compare(ftm_modules_t module, ftm_output_compare_config_t config){
+	ftms[module]->COMBINE &= ~FTM_COMBINE_DECAPEN0_MASK;
+	ftms[module]->COMBINE &= ~FTM_COMBINE_COMBINE0_MASK;
+	ftms[module]->SC &= ~FTM_SC_CPWMS_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC &= ~FTM_CnSC_CHF_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC &= ~FTM_CnSC_MSB_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_MSA_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_DMA(config.enable_dma);
+	ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_CHIE_MASK;
+	ftms[module]->CONTROLS[config.channel].CnV = FTM_CnV_VAL(config.cnv);
+	ftms[module]->SC |= FTM_SC_TOIE_MASK;
+}
+
 //IRQS
 void FTM0_IRQHandler(void){
 	irq_callbacks[FTM_0][0]();
+	ftms[FTM_0]->SC &= ~FTM_SC_TOF_MASK;		//clears the overflow flag
 }
 void FTM1_IRQHandler(void){
 	irq_callbacks[FTM_1][0]();
+	ftms[FTM_1]->SC &= ~FTM_SC_TOF_MASK;		//clears the overflow flag
+
 }
 void FTM2_IRQHandler(void){
 	irq_callbacks[FTM_2][0]();
+	ftms[FTM_2]->SC &= ~FTM_SC_TOF_MASK;		//clears the overflow flag
 }
 

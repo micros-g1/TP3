@@ -58,8 +58,8 @@ void dma_set_config_channel(dma_conf_t config){
 
 	dma->TCD[config.dma_mux_conf.channel_number].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(config.citer);
 	dma->TCD[config.dma_mux_conf.channel_number].BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(config.citer);
-	dma->TCD[config.dma_mux_conf.channel_number].SLAST |= DMA_SLAST_SLAST(config.source_address_adjustment);
-	dma->TCD[config.dma_mux_conf.channel_number].DLAST_SGA |= DMA_DLAST_SGA_DLASTSGA(config.destination_address_adjustment);
+	dma->TCD[config.dma_mux_conf.channel_number].SLAST = DMA_SLAST_SLAST(config.source_address_adjustment);
+	dma->TCD[config.dma_mux_conf.channel_number].DLAST_SGA = DMA_DLAST_SGA_DLASTSGA(config.destination_address_adjustment);
 		//sets bandwidth control to no engine stalls.
 		/*1 The current channel’s TCD specifies a scatter gather format.
 		The DLASTSGA field provides a memory pointer to the next TCD to be loaded
