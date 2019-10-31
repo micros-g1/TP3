@@ -56,8 +56,8 @@ inline void pit_clear_timer_interrupt_flag(pit_channels_t channel){
 	PIT->CHANNEL[channel].TFLG |= PIT_TFLG_TIF(1);		//write one to clear
 }
 
-void pit_set_new_timer_countdown(pit_conf_t conf){
-	PIT->CHANNEL[conf.channel].LDVAL = PIT_LDVAL_TSV(conf.timer_count);
+void pit_set_new_timer_countdown(pit_channels_t channel, uint32_t countdown){
+	PIT->CHANNEL[channel].LDVAL = PIT_LDVAL_TSV(countdown);
 }
 
 void pit_set_timer_interrupt_enabled(pit_channels_t channel, bool enabled_disabled){

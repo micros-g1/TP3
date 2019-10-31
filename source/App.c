@@ -47,6 +47,7 @@ void App_Init (void){
 	uartInit(UART_ID, config);
 }
 
+
 void App_Run (void)
 {
 	if (fskIsRxMsg()) {
