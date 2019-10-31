@@ -40,7 +40,12 @@ void App_Init (void){
 }
 
 void App_Run (void){
-
+	if(true)
+	{
+		uint8_t val = 0xAA;
+		fskWriteMsg(&val, 1);
+		while(!fskIsTxMsgComplete());
+	}
 }
 
 /*******************************************************************************

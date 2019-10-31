@@ -15,21 +15,26 @@
 #include "DMA/dma.h"
 
 #define TOTAL_TABLE_ELEMENTS 256
-#define TIMER_FREQ 50e6UL
+#define TIMER_FREQ 50000000UL
 #define BIT_1_FREQ	1200
 #define BIT_0_FREQ  2200
 #define BAUD_RATE   1200
+
+#define BIT_1_COUNTER_VALUE (TIMER_FREQ/(BIT_1_FREQ*TOTAL_TABLE_ELEMENTS))
+#define BIT_0_COUNTER_VALUE (TIMER_FREQ/(BIT_0_FREQ*TOTAL_TABLE_ELEMENTS))
+#define BIT_TIME_COUNTER_VALUE (TIMER_FREQ/BAUD_RATE)
 
 #if (TOTAL_TABLE_ELEMENTS & (TOTAL_TABLE_ELEMENTS - 1)) != 0
 #error Table total elements must be power of two
 #endif
 uint16_t sin_table[TOTAL_TABLE_ELEMENTS] __attribute__ ((aligned(TOTAL_TABLE_ELEMENTS)));
 
+fsk_tx_next_bit_callback next_bit_callback;
 
 static float map_to_range(float a, float b, float c, float d, float x);
 static void next_bit_request_handler(void);
 
-void fsk_tx_init(fsk_tx_next_bit_callback next_bit_callback)
+void fsk_tx_init(fsk_tx_next_bit_callback callback)
 {
 	static bool initialized = false;
 	if(initialized)
@@ -39,6 +44,8 @@ void fsk_tx_init(fsk_tx_next_bit_callback next_bit_callback)
 	float h = 2*M_PI/TOTAL_TABLE_ELEMENTS;
 	for (int i = 0; i < TOTAL_TABLE_ELEMENTS; i++){
 		float value = map_to_range(-1, 1, 0, DAC_MAX_DIGITAL_VALUE, sin(h*i));
+		//For debugging
+		//value = (((float)i)/TOTAL_TABLE_ELEMENTS)*DAC_MAX_DIGITAL_VALUE;
 		sin_table[i] = (uint16_t)value;
 	}
 	dac_init();
@@ -55,11 +62,13 @@ void fsk_tx_init(fsk_tx_next_bit_callback next_bit_callback)
 
 	/* pit */
 	pit_init();
-	pit_conf_t pit_conf = {.callback=NULL, .chain_mode=false, .channel=PIT_CH0, .timer_count=0x00FF , .timer_enable=true, .timer_interrupt_enable=false};
+	//Set default counter value to bit 1, IDLE
+	pit_conf_t pit_conf = {.callback=NULL, .chain_mode=false, .channel=PIT_CH0, .timer_count=BIT_1_COUNTER_VALUE , .timer_enable=true, .timer_interrupt_enable=false};
 	//Interrupt disabled by default
-	pit_conf_t pit_conf1 = {.callback=next_bit_request_handler, .chain_mode=false, .channel=PIT_CH1, .timer_count=41667, .timer_enable=true, .timer_interrupt_enable=false};
+	pit_conf_t pit_conf1 = {.callback=next_bit_request_handler, .chain_mode=false, .channel=PIT_CH1, .timer_count=BIT_TIME_COUNTER_VALUE, .timer_enable=true, .timer_interrupt_enable=false};
 	pit_set_channel_conf(pit_conf);
 	pit_set_channel_conf(pit_conf1);
+	next_bit_callback = callback;
 }
 void fsk_tx_interrupt_enable(bool ie)
 {
@@ -72,12 +81,10 @@ static float map_to_range(float a, float b, float c, float d, float x){
 	return ret;
 }
 
-static bool bit = false;
 static void next_bit_request_handler(void)
 {
-	bit = !bit;
-	if(bit)
-		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(89);
-	else
-		PIT->CHANNEL[0].LDVAL = PIT_LDVAL_TSV(163);
+	bool bit = true;
+	if(next_bit_callback != NULL)
+		bit = next_bit_callback();
+	pit_set_new_timer_countdown(PIT_CH0,bit?BIT_1_COUNTER_VALUE:BIT_0_COUNTER_VALUE);
 }

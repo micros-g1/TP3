@@ -7,6 +7,8 @@
 
 #include <FSK/fsk.h>
 #include <FSK/fsk_tx.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #define USING_ODD_PARITY true
 
@@ -18,6 +20,9 @@ static size_t rx_in_index, rx_out_index;
 static size_t tx_in_index, tx_out_index;
 static size_t tx_total_elements, rx_total_elements;
 
+static void __fsk_byte_received_callback(uint8_t byte);
+static bool __fsk_next_bit_callback();
+
 #define __MIN(x,y) ( (x) < (y) ? (x) : (y) )
 
 void fskInit ()
@@ -26,7 +31,7 @@ void fskInit ()
 	tx_in_index = rx_out_index = 0;
 	tx_total_elements = rx_total_elements = 0;
 	//TODO: Enable everything else
-	fsk_tx_init(NULL);
+	fsk_tx_init(__fsk_next_bit_callback);
 	fsk_tx_interrupt_enable(true);
 }
 
@@ -66,7 +71,7 @@ size_t fskReadMsg(uint8_t * msg, size_t cant)
 
 size_t fskWriteMsg(const uint8_t* msg, size_t cant)
 {
-	//TODO: Disable interrupts
+	fsk_tx_interrupt_enable(false);
 	size_t bytes_to_copy = __MIN(FSK_TX_QUEUE_SIZE-rx_total_elements,cant);
 	for(size_t i = 0 ; i < bytes_to_copy ; i++)
 	{
@@ -75,28 +80,27 @@ size_t fskWriteMsg(const uint8_t* msg, size_t cant)
 		if(tx_in_index == FSK_TX_QUEUE_SIZE)
 			tx_in_index = 0;
 	}
-	//TODO: Enable interrupts
+	fsk_tx_interrupt_enable(true);
 	return bytes_to_copy;
 }
+
 
 bool fskIsTxMsgComplete()
 {
 	bool transfer_finished = false;
-	//TODO: Disable interrupts
+	fsk_tx_interrupt_enable(false);
 	transfer_finished = tx_total_elements == 0;
-	//TODO: Enable interrupts
+	fsk_tx_interrupt_enable(true);
 	return transfer_finished;
 }
 
-
-bool __fsk_next_bit_callback()
+static bool __fsk_next_bit_callback()
 {
 	//Default values
-	static uint8_t bit_mask = 1;
 	static bool started = false;
-	static bool parity_sent = false;
-	static bool parity = USING_ODD_PARITY;
-
+	static uint8_t bit_mask;
+	static bool parity_sent;
+	static bool parity;
 	//Assume IDLE
 	bool bit = true;	//If idle, send TRUE
 
@@ -123,7 +127,7 @@ bool __fsk_next_bit_callback()
 			if(tx_out_index == FSK_TX_QUEUE_SIZE)
 				tx_out_index = 0;
 			//DEFAULT VALUES
-			parity = USING_ODD_PARITY;
+			parity = true;
 			started = parity_sent = false;
 			bit_mask = 1;
 		}
@@ -133,11 +137,14 @@ bool __fsk_next_bit_callback()
 		//More data to send. Send start bit
 		started = true;
 		bit = false;
+		bit_mask = 1;
+		parity_sent = false;
+		parity = USING_ODD_PARITY;
 	}
 	return bit;
 }
 
-void __fsk_byte_received_callback(uint8_t byte)
+static void __fsk_byte_received_callback(uint8_t byte)
 {
 	if(rx_total_elements != FSK_RX_QUEUE_SIZE)
 	{
