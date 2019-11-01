@@ -10,8 +10,8 @@ void adc_init(){
 	/* Input channel select */
 	ADC0->SC1[0] &= ~ADC_SC1_ADCH_MASK;
 
-	/* Enable COCO interrupt */
-	//ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
+	/* Enable COCO Interrupt*/
+	ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
 
 	/* 16 bit conversion */
 	ADC0->CFG1 |= ADC_CFG1_MODE_MASK;
@@ -85,4 +85,12 @@ void adc_set_conversion_completed_handler(adc_conversion_completed_callback_t ca
 void ADC0_IRQHandler(void){
 	if(conv_completed_callback != NULL)
 		conv_completed_callback();
+}
+
+void adc_set_interrupts_enabled(bool ie)
+{
+	if(ie)
+		NVIC_EnableIRQ(ADC0_IRQn);
+	else
+		NVIC_DisableIRQ(ADC0_IRQn);
 }

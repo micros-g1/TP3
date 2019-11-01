@@ -31,10 +31,10 @@ void fskInit ()
 	rx_in_index = rx_out_index = 0;
 	tx_in_index = rx_out_index = 0;
 	tx_total_elements = rx_total_elements = 0;
-	fsk_tx_init(__fsk_next_bit_callback);
-	fsk_tx_interrupt_enable(true);
 	fsk_rx_init(__fsk_byte_received_callback);
 	fsk_rx_enable_interrupts();
+	fsk_tx_init(__fsk_next_bit_callback);
+	fsk_tx_interrupt_enable(true);
 }
 
 bool fskIsRxMsg()

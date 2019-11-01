@@ -10,14 +10,13 @@
 #include "util/f_list.h"
 #include <stdlib.h>
 #include "VREF/vref_driver.h"
-#include "DMA/dma.h"
 #include "ADC/adc_driver.h"
 #include "PIT/pit.h"
 #include "MK64F12.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include "util/clock.h"
-
+#include "gpio.h"
 
 #define FREQ_1      1200.0
 #define FREQ_0      2200.0
@@ -93,112 +92,62 @@ static bool curr_parity;
 double avg_time;
 static fsk_callback_t callback = NULL;
 
-
-void fsk_rx_process_sample(void);
-
+static void fsk_rx_process_sample(void);
+static void start_convertion_callback();
 
 void fsk_rx_init(fsk_callback_t cb)
 {
-    static bool isinit = false;
-    if (isinit)
-        return;
-    isinit = true;
-    idle = true;
-    y_sum = 0;
-    avg_time = 0;
-    callback = cb;
+	static bool isinit = false;
+	    if (isinit)
+	        return;
+	    isinit = true;
+	    idle = true;
+	    y_sum = 0;
+	    callback = cb;
 
-    flist_t * lists[N_LISTS] = {&samples, &prod_delay, &y};
-    float * buffers[N_LISTS] = {samples_buffer, prod_delay_buffer, y_buffer};
-    uint32_t sizes[N_LISTS] = {D_SAMPLES, FILTER_N, WAVE_LEN};
+	    flist_t * lists[N_LISTS] = {&samples, &prod_delay, &y};
+	    float * buffers[N_LISTS] = {samples_buffer, prod_delay_buffer, y_buffer};
+	    uint32_t sizes[N_LISTS] = {D_SAMPLES, FILTER_N, WAVE_LEN};
 
-    for (unsigned int i = 0; i < N_LISTS; i++) {
-        fl_init(lists[i], buffers[i], sizes[i]);
-        for (unsigned int j = 0; j < sizes[i]; j++) {
-            fl_pushback(lists[i], 0.0);
-        }
-    }
+	    for (unsigned int i = 0; i < N_LISTS; i++) {
+	        fl_init(lists[i], buffers[i], sizes[i]);
+	        for (unsigned int j = 0; j < sizes[i]; j++) {
+	            fl_pushback(lists[i], 0.0);
+	        }
+	    }
 
-	vref_init();
+		vref_init();
 
-	adc_init();
-	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
-	adc_enable_dma(true);
+		adc_init();
+		adc_trigger_select(ADC_SOFTWARE_TRIGGER);
+		adc_set_conversion_completed_handler(fsk_rx_process_sample);
 
-	dma_init();
-
-	/* Configure DMA to trigger ADC conversion */
-
-	dma_mux_conf_t mux_conf1 = {
-		.channel_number=2,
-		.dma_enable=true,
-		.source=60, //kDmaRequestMux0AlwaysOn59,
-		.trigger_enable=true
-	};
-	dma_conf_t conf1 = {
-		.citer=1,
-		.destination_address= (uint32_t)&ADC0->SC1[0],
-		.destination_address_adjustment=0,
-		.destination_data_transfer_size=DMA_32BIT,
-		.destination_offset=0,
-		.dma_mux_conf=mux_conf1,
-		.nbytes=sizeof(uint32_t),
-		.source_address=(uint32_t)&ADC0->SC1[0],
-		.source_data_transfer_size=DMA_32BIT,
-		.source_offset=0,
-		.major_loop_int_enable = false,
-		.callback = NULL
-	};
-
-	dma_set_config_channel(conf1);
-
-
-	/* Configure DMA to retrieve ADC value and store it in DAC */
-	dma_mux_conf_t mux_conf2 = {
-		.channel_number=1,
-		.dma_enable=true,
-		.source=40, //ADC0
-		.trigger_enable=true
-	};
-	dma_conf_t conf2 = {
-		.citer=1,
-		.destination_address=(uint32_t)&adc_result,
-		.destination_address_adjustment=0,
-		.destination_data_transfer_size=DMA_16BIT,
-		.destination_offset=0,
-		.dma_mux_conf=mux_conf2,
-		.nbytes=sizeof(uint16_t),
-		.source_address=(uint32_t)&ADC0->R[0],
-		.source_address_adjustment=0,
-		.source_data_transfer_size=DMA_16BIT,
-		.source_offset=0,
-		.major_loop_int_enable = false,
-		.callback = fsk_rx_process_sample
-	};
-	dma_set_config_channel(conf2);
-
-
-	/* pit */
-	pit_init();
-	pit_conf_t pit_conf = {
-		.callback=NULL,
-		.chain_mode=false,
-		.channel=PIT_CH2,
-		.timer_count=SAMPLING_COUNT_VALUE,
-		.timer_enable=true,
-		.timer_interrupt_enable=false
-	};
-	pit_set_channel_conf(pit_conf);
+		/* pit */
+		pit_init();
+		pit_conf_t pit_conf = {
+			.callback=start_convertion_callback,
+			.chain_mode=false,
+			.channel=PIT_CH1,
+			.timer_count=SAMPLING_COUNT_VALUE,
+			.timer_enable=true,
+			.timer_interrupt_enable=true
+		};
+		pit_set_channel_conf(pit_conf);
+		gpioMode(PORTNUM2PIN(PA, 1), OUTPUT);
+		gpioMode(PORTNUM2PIN(PB, 23), OUTPUT);
 }
 
-uint16_t second[12000];
-int j;
+uint16_t debug_data[12000];
+int i = 0;
 void fsk_rx_process_sample(void)
 {
-	second[j++] = adc_result;
-	if(j == 12000)
-		j = 0;
-    uint16_t sample = 2.3*adc_result;
+	gpioWrite(PORTNUM2PIN(PB, 23),true);
+	uint16_t sample = adc_get_data();
+	debug_data[i++] = sample;
+	if(i == 12000)
+		i = 0;
+    sample *= 2.3;
+    gpioWrite(PORTNUM2PIN(PB, 23),false);
     float newest_sample = ((float)sample)/(((float)UINT16_MAX)/2.0)-1;
     float oldest_sample = fl_popfront(&samples);
     fl_pushback(&samples, newest_sample);
@@ -261,11 +210,20 @@ void fsk_rx_process_sample(void)
 
 void fsk_rx_disable_interrupts()
 {
-	dma_mjr_loop_interrupt_enable(1,false);
+	adc_set_interrupts_enabled(false);
 }
 
 void fsk_rx_enable_interrupts()
 {
-	dma_mjr_loop_interrupt_enable(1,true);
+	adc_set_interrupts_enabled(true);
 }
+
+
+static void start_convertion_callback()
+{
+	gpioWrite(PORTNUM2PIN(PA, 1),true);
+	adc_trigger_conversion();
+	gpioWrite(PORTNUM2PIN(PA, 1),false);
+}
+
 

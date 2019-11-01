@@ -53,19 +53,14 @@ void App_Init (void){
 
 void App_Run (void)
 {
-
-	//if (uartIsRxMsg(UART_ID)) {
-	//	uint8_t n = uartReadMsg(UART_ID, buffer, BUFFER_SIZE);
-	//	fskWriteMsg(buffer, n);
-	//}
-	//if (fskIsRxMsg()) {
-	//	uint8_t n = fskReadMsg(buffer, BUFFER_SIZE);
-	//	uartWriteMsg(UART_ID, buffer, n);
-	//}
-
-	uint8_t data[] = {0x55,0xAA,0x00,0xFF};
-	if(fskIsTxMsgComplete())
-		fskWriteMsg(&data,sizeof(data)/sizeof(data[0]));
+	if (uartIsRxMsg(UART_ID)) {
+		uint8_t n = uartReadMsg(UART_ID, buffer, BUFFER_SIZE);
+		fskWriteMsg(buffer, n);
+	}
+	if (fskIsRxMsg()) {
+		uint8_t n = fskReadMsg(buffer, BUFFER_SIZE);
+		uartWriteMsg(UART_ID, buffer, n);
+	}
 }
 
 /*******************************************************************************
