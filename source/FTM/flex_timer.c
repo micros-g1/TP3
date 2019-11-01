@@ -9,8 +9,7 @@
  * *********************INCLUDES**********************
  *****************************************************/
 #include "flex_timer.h"
-#include "board.h"
-#include "gpio.h"
+
 /*****************************************************
  * *********************DEFINES************************
  *****************************************************/
@@ -56,7 +55,6 @@ void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
 	NVIC_EnableIRQ(ftm_irqs[module]);
 
 	ftm_set_prescaler(module, prescaler_config);
-//	conf_port(module);
 
 	initiliazed = true;
 }
@@ -105,6 +103,10 @@ uint16_t ftm_get_mod_value(ftm_modules_t module){
 }
 
 //Channel (n) Status And Control		CnSC
+
+void ftm_enable_dma(ftm_modules_t module, bool enable_disable){
+//	ftms[module]->CONTROLS->CnSC;
+}
 
 
 void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
@@ -177,11 +179,6 @@ void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t
 
 	ftms[module]->CNTIN=0;		//resets the counter
 	write_mod_value(module, config.mod);
-}
-
-void ftm_conf_port(ftm_modules_t module, ftm_channel_t channel){
-	if (module == FTM_0 && channel == FTM_CHNL_0)
-		gpioMode(PIN_FTM0_CH0, OUTPUT);
 }
 
 //IRQS
