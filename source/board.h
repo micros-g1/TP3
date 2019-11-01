@@ -23,7 +23,7 @@
 #define LED_ACTIVE      LOW
 
 //FTMS pins
-#define PIN_FTM0_CH0	PORTNUM2PIN(PA,3)
+#define PIN_FTM0_CH0	PORTNUM2PIN(PC,1)
 
 
 /*******************************************************************************

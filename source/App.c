@@ -12,6 +12,7 @@
 #include "UART/uart.h"
 #include "util/clock.h"
 #include <stdlib.h>
+#include <FTM/flex_timer.h>
 #include "FSK/fsk_rx.h"
 #include "FTM/flex_timer.h"
 #include <string.h>
@@ -84,11 +85,22 @@ void App_Init (void){
 	cmp_set_dac_conf(dac_conf);
 
 
+	ftm_input_capture_config_t input_conf = {.channel=0x00, .mod=((1<<16)-1),.mode=FTM_IC_BOTH_EDGES, .filter_value=0x00, .callback=reset};
+	ftm_set_input_capture_conf(FTM_0, input_conf);
+	ftm_conf_port(FTM_0, FTM_CHNL_0);
+	ftm_start_stop_clock(FTM_0, true);
 }
 
 
-void App_Run (void){
+void App_Run (void)
+{
 
+
+	while(1);
+
+}
+void reset(uint16_t count_value){
+	ftm_reset_counter_value(FTM_0);
 }
 
 /*******************************************************************************
