@@ -22,9 +22,11 @@
 
 #define LED_ACTIVE      LOW
 
-//FTMS pins
-#define PIN_FTM0_CH0	PORTNUM2PIN(PA,3)
+// Accelerometer pins
+#define ACCEL_SCL_PIN	PORTNUM2PIN(PE, 24u)
+#define ACCEL_SDA_PIN	PORTNUM2PIN(PE, 25u)
 
+#define MCP25625_INTREQ_PIN	PORTNUM2PIN(PD, 0)
 
 /*******************************************************************************
  ******************************************************************************/

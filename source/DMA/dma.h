@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef void (* dma_callback_t)(void);
+
 typedef enum{DMA_8BIT = 0x00, DMA_16BIT = 0x01, DMA_32BIT = 0x02, DMA_16BYTE_BURST = 0x4, DMA_32BYTE_BURST = 0x05} dma_transfer_size_t;
 typedef enum {DMA_FTM_} dma_sources_t;
 typedef struct{
@@ -34,6 +36,8 @@ typedef struct{
 	int32_t destination_address_adjustment;
 	uint8_t smod;
 	uint8_t dmod;
+	bool major_loop_int_enable;
+	dma_callback_t callback;
 }dma_conf_t;
 
 
@@ -47,4 +51,5 @@ typedef struct{
 void dma_init();
 void dma_set_config_channel(dma_conf_t config);
 bool dma_get_finished_transfer(int channel);
+void dma_mjr_loop_interrupt_enable(uint8_t channel_number, bool ie);
 #endif /* DMA_DMA_H_ */
