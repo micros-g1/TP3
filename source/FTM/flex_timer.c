@@ -11,6 +11,7 @@
 #include "flex_timer.h"
 #include "board.h"
 #include "gpio.h"
+
 /*****************************************************
  * *********************DEFINES************************
  *****************************************************/
@@ -61,10 +62,20 @@ void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
 	initiliazed = true;
 }
 
-// CONTROL STATUS REGISTER		SC
-void ftm_start_stop_clock(ftm_modules_t module, bool start_stop){
-	ftms[module]->SC = (ftms[module]->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(start_stop);
+
+void ftm_set_clk_src(ftm_modules_t module, ftm_clk_src_t source){
+	ftms[module]->SC = ftms[module]->SC = (ftms[module]->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(source);
 }
+
+// CONTROL STATUS REGISTER		SC
+void ftm_enable_clock(ftm_modules_t module, bool enable){
+	// by default enables clk in system clk source
+	if(enable)
+		ftms[module]->SC = ftms[module]->SC = (ftms[module]->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(FTM_SYSTEM_CLK);
+	else
+		ftms[module]->SC = ftms[module]->SC = (ftms[module]->SC & ~FTM_SC_CLKS_MASK) | FTM_SC_CLKS(0);
+}
+
 void ftm_set_prescaler(ftm_modules_t module , ftm_prescaler_t prescaler_config){
 	ftms[module]->SC = (ftms[module]->SC & ~FTM_SC_PS_MASK) | FTM_SC_PS(prescaler_config);
 }
@@ -154,6 +165,14 @@ void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
 	write_mod_value(module , config.mod);
 	ftms[module]->CONTROLS[config.channel].CnV=config.CnV;
 	ftms[module]->CNTIN = 0;		//resets counter value.
+
+	//set callbacks
+	irq_callbacks[module][config.channel] = config.callback;
+}
+
+void ftm_set_pwm_duty_cycle(ftm_modules_t module, ftm_channel_t channel,uint8_t duty_cycle){
+	float new_cnv = ((float)duty_cycle / 100.0) * (float)(ftms[module]->MOD & FTM_MOD_MOD_MASK);
+	ftms[module]->CONTROLS[channel].CnV = FTM_CnV_VAL((uint16_t)new_cnv);
 }
 
 void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t config){
@@ -186,6 +205,9 @@ void ftm_conf_port(ftm_modules_t module, ftm_channel_t channel){
 
 //IRQS
 void FTM0_IRQHandler(void){
+	bool flag = (FTM0->SC & FTM_SC_TOF_MASK);
+	if (flag)
+		FTM0->SC &= ~FTM_SC_TOF_MASK;
 	irq_callbacks[FTM_0][0]();
 }
 void FTM1_IRQHandler(void){

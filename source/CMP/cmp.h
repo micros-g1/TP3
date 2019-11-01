@@ -54,7 +54,8 @@ typedef struct{
 }cmp_dac_conf_t;
 
 void cmp_init(cmp_modules_t module);
-void cmp_set_mod_conf(cmp_conf_t conf);
+// Obsoleta
+//void cmp_set_mod_conf(cmp_conf_t conf);
 void cmp_set_dac_conf(cmp_dac_conf_t conf);
 
 void cmp_enable_module(cmp_modules_t module, bool enable_disable);

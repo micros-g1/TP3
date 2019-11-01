@@ -291,12 +291,10 @@ void uart_irq_handler(uint8_t id)
 		}
 	}
 	else {
-s
-			uarts[id]->D = q_popfront(&tx_q[id]);
-		}
-		if(!tx_q[id].len) {
-			uarts[id]->C2 &= ~UART_C2_TIE_MASK; // message finished, disable transmission interrupts
-		}
+		uarts[id]->D = q_popfront(&tx_q[id]);
+	}
+	if(!tx_q[id].len) {
+		uarts[id]->C2 &= ~UART_C2_TIE_MASK; // message finished, disable transmission interrupts
 	}
 }
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="com.pemicro.debug.gdbjtag.pne.launchConfigurationType">
-<stringAttribute key="com.crt.ctrlcenter.OFSemuDetails" value="PEMicro955F3E61"/>
+<stringAttribute key="com.crt.ctrlcenter.OFSemuDetails" value="PEMicro853C7E49"/>
 <booleanAttribute key="com.crt.ctrlcenter.saveState" value="true"/>
-<stringAttribute key="com.crt.ctrlcenter.serialNumber" value="USB1 - OpenSDA (955F3E61)"/>
+<stringAttribute key="com.crt.ctrlcenter.serialNumber" value="USB1 - OpenSDA (853C7E49)"/>
 <stringAttribute key="com.nxp.mcuxpresso.ide.probe.manufacturer" value="P&amp;E Microcomputer Systems"/>
-<stringAttribute key="com.nxp.mcuxpresso.ide.probe.name" value="USB1 - OpenSDA (955F3E61)"/>
+<stringAttribute key="com.nxp.mcuxpresso.ide.probe.name" value="USB1 - OpenSDA (853C7E49)"/>
 <stringAttribute key="com.nxp.mcuxpresso.ide.probe.type" value="USB1"/>
 <listAttribute key="com.pemicro.debug.gdbjtag.pne.ELVES"/>
 <intAttribute key="com.pemicro.debug.gdbjtag.pne.NUMBER_ELVES" value="0"/>

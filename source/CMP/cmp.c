@@ -35,6 +35,21 @@ void cmp_init(cmp_modules_t module){
 			for (int j = 0; j < CMP_AMOUNT_INT_TYPES; ++j)
 				interrupts_info[i][j] = int_info;
 
+		CMP_Type* curr_cmp = modules[module];
+
+		/* CR0 Register */
+		/* 1 Sample */
+		curr_cmp->CR0 = (curr_cmp->CR0 & ~CMP_CR0_FILTER_CNT_MASK) | CMP_CR0_FILTER_CNT(1);
+
+		/* CR1 REGISTER */
+		curr_cmp->CR1 |= CMP_CR1_SE(1);
+
+		/*SCR REGISTER */
+		curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
+
+		curr_cmp->MUXCR = 0x00;
+		curr_cmp->MUXCR |= CMP_MUXCR_MSEL(0) | CMP_MUXCR_PSEL(1);
+
 		initialized = true;
 	}
 
@@ -42,24 +57,24 @@ void cmp_init(cmp_modules_t module){
 	cmp_enable_module(module, true);
 }
 
+// Obsoleta!!!!
 void cmp_set_mod_conf(cmp_conf_t conf){
 	CMP_Type* curr_cmp = modules[conf.module];
 
-	/*CR1 REGISTER.
-	*/
-	curr_cmp->CR1 ^= (-(unsigned long)conf.high_power ^ curr_cmp->CR1) & CMP_CR1_PMODE_MASK;
-	curr_cmp->CR1 ^= (-(unsigned long)conf.invert_comparison ^ curr_cmp->CR1) & CMP_CR1_INV_MASK;
-	curr_cmp->CR1 ^= (-(unsigned long)conf.comparator_output_unfiltered ^ curr_cmp->CR1) & CMP_CR1_COS_MASK;
-	curr_cmp->CR1 ^= (-(unsigned long)conf.window_enable ^ curr_cmp->CR1) & CMP_CR1_WE_MASK;
-	curr_cmp->CR1 ^= (-(unsigned long)conf.sample_enable ^ curr_cmp->CR1) & CMP_CR1_SE_MASK;
-	/*SCR REGISTER.
-	*/
+	/* CR0 Register */
+	/* 1 Sample */
+	curr_cmp->CR0 = (curr_cmp->CR0 & ~CMP_CR0_FILTER_CNT_MASK) | CMP_CR0_FILTER_CNT(1);
+
+	/* CR1 REGISTER */
+	curr_cmp->CR1 |= CMP_CR1_SE(1);
+
+	/*SCR REGISTER */
 	curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
 
 	cmp_mux_conf_t mux_conf = conf.mux_conf;
 	curr_cmp->MUXCR = 0x00;
-	curr_cmp->MUXCR = CMP_MUXCR_PSEL(mux_conf.plus_input_mux_control) | CMP_MUXCR_MSEL(mux_conf.minus_input_mux_control);
-	curr_cmp->MUXCR ^= (-(unsigned long)mux_conf.pass_through_mode_enabled ^ curr_cmp->MUXCR) & CMP_MUXCR_PSTM_MASK;
+//	curr_cmp->MUXCR = CMP_MUXCR_PSEL(mux_conf.plus_input_mux_control) | CMP_MUXCR_MSEL(mux_conf.minus_input_mux_control);
+//	curr_cmp->MUXCR ^= (-(unsigned long)mux_conf.pass_through_mode_enabled ^ curr_cmp->MUXCR) & CMP_MUXCR_PSTM_MASK;
 }
 
 
