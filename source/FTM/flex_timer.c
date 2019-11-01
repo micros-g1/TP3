@@ -109,10 +109,8 @@ uint16_t ftm_get_mod_value(ftm_modules_t module){
 
 void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
 
-	if(config.enable_dma)
-		ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_DMA_MASK|FTM_CnSC_CHIE_MASK;		//enables dma
-	else
-		(ftms[module]->CONTROLS[config.channel].CnSC) &= ~FTM_CnSC_DMA_MASK;						//disables dma
+
+	(ftms[module]->CONTROLS[config.channel].CnSC) &= ~FTM_CnSC_DMA_MASK;						//disables dma
 
 	/*	SWSOC
 	* Software output control synchronization is activated by the software trigger.
@@ -158,40 +156,46 @@ void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
 
 void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t config){
 
-	ftms[module]->CONTROLS[config.channel].CnSC= FTM_CnSC_ELSA(config.mode & 1)|FTM_CnSC_ELSB((config.mode << 1 )&1);
+	ftms[module]->CONTROLS[config.channel].CnSC = FTM_CnSC_ELSA(config.mode & 1) | FTM_CnSC_ELSB((config.mode << 1 )&1);
 
 	if(config.channel <= 3){
-		uint32_t filters_masks[4]={FTM_FILTER_CH0FVAL(config.filter_value), FTM_FILTER_CH1FVAL(config.filter_value),
+		uint32_t filters_masks[4] = {FTM_FILTER_CH0FVAL(config.filter_value), FTM_FILTER_CH1FVAL(config.filter_value),
 				FTM_FILTER_CH2FVAL(config.filter_value), FTM_FILTER_CH3FVAL(config.filter_value)};
-		ftms[module]->FILTER|=filters_masks[config.channel];
+		ftms[module]->FILTER |= filters_masks[config.channel];
 	}
 	//CALLBACK
 	irq_callbacks[module][config.channel] = config.callback;
 
-	if(config.enable_dma)
-		ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_DMA_MASK|FTM_CnSC_CHIE_MASK;
-	else{
-		(ftms[module]->CONTROLS[config.channel].CnSC) &= ~FTM_CnSC_DMA_MASK;
-		ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_CHIE_MASK;
-	}
+	(ftms[module]->CONTROLS[config.channel].CnSC) &= ~FTM_CnSC_DMA_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_CHIE_MASK;
 
 	ftms[module]->CNTIN=0;		//resets the counter
 	write_mod_value(module, config.mod);
 }
 
 void ftm_conf_port(ftm_modules_t module, ftm_channel_t channel){
-	if (module == FTM_0 && channel == FTM_CHNL_0)
-		gpioMode(PIN_FTM0_CH0, OUTPUT);
+
+	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
+
+	PORTC->PCR[1] = PORT_PCR_SRE(0) | PORT_PCR_PFE(0) |
+			PORT_PCR_ODE(0) | PORT_PCR_DSE(0) | PORT_PCR_PS (2U) |
+			PORT_PCR_MUX(4) | PORT_PCR_LK (0) | PORT_PCR_IRQC(0);
+
+	// Enable or disable internal pull resistor
+	PORTC->PCR[1] &= ~PORT_PCR_PE_MASK;
 }
 
 //IRQS
 void FTM0_IRQHandler(void){
-	irq_callbacks[FTM_0][0]();
+	ftms[FTM_0]->CONTROLS[0].CnSC &=  ~FTM_CnSC_CHF_MASK;
+	irq_callbacks[FTM_0][0](ftms[FTM_0]->CONTROLS[0].CnV);
 }
 void FTM1_IRQHandler(void){
-	irq_callbacks[FTM_1][0]();
+	ftms[FTM_1]->CONTROLS[1].CnSC &=  ~FTM_CnSC_CHF_MASK;
+	irq_callbacks[FTM_1][0](ftms[FTM_1]->CONTROLS[0].CnV);
 }
 void FTM2_IRQHandler(void){
-	irq_callbacks[FTM_2][0]();
+	ftms[FTM_2]->CONTROLS[1].CnSC &=  ~FTM_CnSC_CHF_MASK;
+	irq_callbacks[FTM_2][0](ftms[FTM_2]->CONTROLS[0].CnV);
 }
 

@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef void (*ftm_irq_callback_t)(void);
+typedef void (*ftm_irq_callback_t)(uint16_t capture_value);
 typedef enum{FTM_0, FTM_1, FTM_2, FTM_3, FTM_AMOUNT_MODULES} ftm_modules_t;
 
 typedef enum{ FTM_PSC_x1= 0x00, FTM_PSC_x2= 0x01, FTM_PSC_x4= 0x02,
@@ -27,7 +27,6 @@ typedef enum{ FTM_IC_RISING_EDGE=1, FTM_IC_FALLING_EDGE, FTM_IC_BOTH_EDGES}ftm_i
 typedef struct{
 	ftm_channel_t channel;
 	ftm_pwm_mode_t mode;
-	bool enable_dma;
 	uint16_t mod;
 	uint8_t CnV;
 }ftm_pwm_config_t;
@@ -35,7 +34,6 @@ typedef struct{
 typedef struct {
 	ftm_channel_t channel;
 	ftm_irq_callback_t callback;
-	bool enable_dma;
 	uint16_t mod;
 	ftm_input_capture_mode mode;
 	uint32_t filter_value;		//Only channels 0,1,2 and 3 can have filter
