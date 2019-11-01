@@ -44,7 +44,7 @@ typedef struct {
  ******************************************************************************/
 
 /**
- * @brief Initialize UART driver. Interruptions are enabled by default
+ * @brief Initialize UART driver
  * @param id UART's number
  * @param config UART's configuration (baudrate, parity, word size)
 */
@@ -88,16 +88,6 @@ uint8_t uartWriteMsg(uint8_t id, const uint8_t* msg, uint8_t cant);
  * @return All bytes were transfered
 */
 bool uartIsTxMsgComplete(uint8_t id);
-
-/**
- * @brief Disable all interrupts. Messages might not be sent until they are enabled again
- */
-void uartDisableInterrupts(uint8_t id);
-
-/**
- * @brief Enable interrupts. Interruptions are enabled by default
- */
-void uartEnableInterrupts(uint8_t id);
 
 
 

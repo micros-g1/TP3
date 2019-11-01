@@ -8,10 +8,18 @@
 
 #include <DMA/dma.h>
 #include "MK64F12.h"
+#include <stdlib.h>
+
 #define DMA_AMOUNT_CHANNELS	16
 
 static void dma_mux_init(dma_mux_conf_t config);
 static void change_erq_flag(int channel_number, bool value);
+
+static dma_callback_t callbacks[DMA_AMOUNT_CHANNELS];
+
+void DMA_IRQHandler(uint8_t channel_number);
+
+
 
 void dma_init(){
 
@@ -22,6 +30,10 @@ void dma_init(){
 	SIM_Type* sim = SIM;
 	sim->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
 	sim->SCGC7 |= SIM_SCGC7_DMA_MASK;
+
+	for (unsigned int i = 0; i < DMA_AMOUNT_CHANNELS; i++) {
+		callbacks[i] = NULL;
+	}
 
 	initialized = true;
 }
@@ -82,6 +94,13 @@ void dma_set_config_channel(dma_conf_t config){
 				DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
 
 		dma->TCD[config.dma_mux_conf.channel_number].ATTR |= DMA_ATTR_SMOD(config.smod) | DMA_ATTR_DMOD(config.dmod);
+
+		if (config.major_loop_int_enable) {
+			NVIC_EnableIRQ(DMA0_IRQn+config.dma_mux_conf.channel_number);
+			callbacks[config.dma_mux_conf.channel_number] = config.callback;
+			dma->TCD[config.dma_mux_conf.channel_number].CSR |= DMA_CSR_INTMAJOR_MASK;
+		}
+
 	}
 }
 
@@ -114,3 +133,89 @@ bool dma_get_finished_transfer(int channel_number){
 	return finished;
 }
 
+void DMA_IRQHandler(uint8_t channel_number)
+{
+	if (callbacks[channel_number] != NULL) {
+		callbacks[channel_number]();
+	}
+}
+
+void DMA0_IRQHandler(void)
+{
+	DMA_IRQHandler(0);
+}
+
+void DMA1_IRQHandler(void)
+{
+	DMA_IRQHandler(1);
+}
+
+void DMA2_IRQHandler(void)
+{
+	DMA_IRQHandler(2);
+}
+
+void DMA3_IRQHandler(void)
+{
+	DMA_IRQHandler(3);
+}
+
+void DMA4_IRQHandler(void)
+{
+	DMA_IRQHandler(4);
+}
+
+void DMA5_IRQHandler(void)
+{
+	DMA_IRQHandler(5);
+}
+
+void DMA6_IRQHandler(void)
+{
+	DMA_IRQHandler(6);
+}
+
+void DMA7_IRQHandler(void)
+{
+	DMA_IRQHandler(7);
+}
+
+void DMA8_IRQHandler(void)
+{
+	DMA_IRQHandler(8);
+}
+
+void DMA9_IRQHandler(void)
+{
+	DMA_IRQHandler(9);
+}
+
+void DMA10_IRQHandler(void)
+{
+	DMA_IRQHandler(10);
+}
+
+void DMA11_IRQHandler(void)
+{
+	DMA_IRQHandler(11);
+}
+
+void DMA12_IRQHandler(void)
+{
+	DMA_IRQHandler(12);
+}
+
+void DMA13_IRQHandler(void)
+{
+	DMA_IRQHandler(13);
+}
+
+void DMA14_IRQHandler(void)
+{
+	DMA_IRQHandler(14);
+}
+
+void DMA15_IRQHandler(void)
+{
+	DMA_IRQHandler(15);
+}

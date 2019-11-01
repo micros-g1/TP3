@@ -55,8 +55,6 @@ static queue_t rx_q[UART_N_IDS];	// pending messages
 
 uart_tx_irq_t tx_handler;
 
-bool interrupts_enabled[UART_N_IDS];
-
 /*******************************************************************************
  * FUNCTION DECLARATIONS, FILE SCOPE
  ******************************************************************************/
@@ -178,7 +176,6 @@ void uartInit (uint8_t id, uart_cfg_t config){
 	}
 
 	uart_active[id] = true;
-	interrupts_enabled[id] = true;
 }
 
 
@@ -234,9 +231,7 @@ uint8_t uartWriteMsg(uint8_t id, const uint8_t * msg, uint8_t cant)
 	}
 
 	if (tx_q[id].len) {
-		if (interrupts_enabled) {
-			uarts[id]->C2 |= UART_C2_TIE_MASK;
-		}
+		uarts[id]->C2 |= UART_C2_TIE_MASK;
 	}
 
 	return i;
@@ -249,22 +244,6 @@ bool uartIsTxMsgComplete(uint8_t id)
 		return false;
 
 	return (tx_q[id].len == 0) && (uarts[id]->S1 & UART_S1_TC_MASK);
-}
-
-
-void uartDisableInterrupts(uint8_t id)
-{
-	uarts[id]->C2 &= ~(UART_C2_TIE_MASK | UART_C2_RIE_MASK);
-	interrupts_enabled[id] = false;
-}
-
-void uartEnableInterrupts(uint8_t id)
-{
-	uarts[id]->C2 |= UART_C2_RIE_MASK;
-	if (tx_q[id].len) {
-		uarts[id]->C2 |= UART_C2_TIE_MASK;
-	}
-	interrupts_enabled[id] = true;
 }
 
 
@@ -312,14 +291,14 @@ void uart_irq_handler(uint8_t id)
 		}
 	}
 	else {
-
+s
 			uarts[id]->D = q_popfront(&tx_q[id]);
-	}
-	if(!tx_q[id].len) {
+		}
+		if(!tx_q[id].len) {
 			uarts[id]->C2 &= ~UART_C2_TIE_MASK; // message finished, disable transmission interrupts
+		}
 	}
 }
-
 
 
 /*******************************************************************************

@@ -27,7 +27,7 @@ void adc_init(){
 	ADC0->SC3 |= ADC_SC3_CAL_MASK;
 	while(ADC0->SC3 & ADC_SC3_CALF_MASK);
 
-	/* Harware average enable */
+	/* Hardware average enable */
 	ADC0->SC3 |= ADC_SC3_AVGE_MASK;
 
 	/* 8 samples average */

@@ -55,17 +55,45 @@ void fsk_tx_init(fsk_tx_next_bit_callback callback)
 	dma_init();
 	/* Configure DMA to write sin values to dest_array */
 	dma_mux_conf_t mux_conf1 = {.channel_number=0, .dma_enable=true, .source=58, .trigger_enable=true};
-	dma_conf_t conf1 = {.citer=1, .destination_address=dac_data0_address(), .destination_address_adjustment=0, .destination_data_transfer_size=DMA_16BIT,
-						.destination_offset=0, .dma_mux_conf=mux_conf1, .nbytes=sizeof(uint16_t), .source_address=(uint32_t)sin_table, .source_data_transfer_size=DMA_16BIT,
-						.source_offset=sizeof(uint16_t), .source_address_adjustment=0, .smod=log2(TOTAL_TABLE_ELEMENTS)+1, .dmod=0};
+	dma_conf_t conf1 = {
+		.citer=1,
+		.destination_address=dac_data0_address(),
+		.destination_address_adjustment=0,
+		.destination_data_transfer_size=DMA_16BIT,
+		.destination_offset=0,
+		.dma_mux_conf=mux_conf1,
+		.nbytes=sizeof(uint16_t),
+		.source_address=(uint32_t)sin_table,
+		.source_data_transfer_size=DMA_16BIT,
+		.source_offset=sizeof(uint16_t),
+		.source_address_adjustment=0,
+		.smod=log2(TOTAL_TABLE_ELEMENTS)+1,
+		.dmod=0,
+		.major_loop_int_enable = false,
+		.callback = NULL
+	};
 	dma_set_config_channel(conf1);
 
 	/* pit */
 	pit_init();
 	//Set default counter value to bit 1, IDLE
-	pit_conf_t pit_conf = {.callback=NULL, .chain_mode=false, .channel=PIT_CH0, .timer_count=BIT_1_COUNTER_VALUE , .timer_enable=true, .timer_interrupt_enable=false};
+	pit_conf_t pit_conf = {
+		.callback=NULL,
+		.chain_mode=false,
+		.channel=PIT_CH0,
+		.timer_count=BIT_1_COUNTER_VALUE,
+		.timer_enable=true,
+		.timer_interrupt_enable=false
+	};
 	//Interrupt disabled by default
-	pit_conf_t pit_conf1 = {.callback=next_bit_request_handler, .chain_mode=false, .channel=PIT_CH1, .timer_count=BIT_TIME_COUNTER_VALUE, .timer_enable=true, .timer_interrupt_enable=false};
+	pit_conf_t pit_conf1 = {
+		.callback=next_bit_request_handler,
+		.chain_mode=false,
+		.channel=PIT_CH1,
+		.timer_count=BIT_TIME_COUNTER_VALUE,
+		.timer_enable=true,
+		.timer_interrupt_enable=false
+	};
 	pit_set_channel_conf(pit_conf);
 	pit_set_channel_conf(pit_conf1);
 	next_bit_callback = callback;

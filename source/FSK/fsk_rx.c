@@ -9,7 +9,11 @@
 #include "fsk_rx.h"
 #include "util/f_list.h"
 #include <stdlib.h>
-
+#include "VREF/vref_driver.h"
+#include "DMA/dma.h"
+#include "ADC/adc_driver.h"
+#include "PIT/pit.h"
+#include "MK64F12.h"
 
 #define FREQ_1      1200.0
 #define FREQ_0      2200.0
@@ -22,20 +26,25 @@
 #define FREQ_S      12000.0
 #define OPT_DELAY   0.000446
 #define D_SAMPLES   ((uint32_t)(OPT_DELAY*FREQ_S))
+#define D_SAMPLES_INT	5 // redo the math to avoid warnings
 
 #define FILTER_N    25
 #define WAVE_LEN    ((uint32_t)(T_BIT*FREQ_S))
+#define WAVE_LEN_INT	10	// redo the math to avoid warnings
+
+#define SAMPLING_COUNT_VALUE PIT_CLOCK_FREQUENCY/FREQ_S
 
 
 #define N_LISTS     3
-static float samples_buffer[D_SAMPLES];
+static float samples_buffer[D_SAMPLES_INT];
 static float prod_delay_buffer[FILTER_N];
-static float y_buffer[WAVE_LEN];
+static float y_buffer[WAVE_LEN_INT];
 
 static flist_t samples;
 static flist_t prod_delay;
 static flist_t y;
 
+volatile uint16_t adc_result;
 
 #define THRESHOLD   0.5
 // 1.0 is logic 0, -1.0 is logic 1
@@ -75,6 +84,9 @@ static const float taps[FILTER_N] = {
 static fsk_callback_t callback = NULL;
 
 
+void fsk_rx_process_sample(void);
+
+
 void fsk_rx_init(fsk_callback_t cb)
 {
     static bool isinit = false;
@@ -94,10 +106,84 @@ void fsk_rx_init(fsk_callback_t cb)
             fl_pushback(lists[i], 0.0);
         }
     }
+
+
+
+
+	vref_init();
+
+	adc_init();
+	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
+	adc_enable_dma(true);
+
+	dma_init();
+
+	/* Configure DMA to trigger ADC conversion */
+
+	dma_mux_conf_t mux_conf1 = {
+		.channel_number=2,
+		.dma_enable=true,
+		.source=60, //kDmaRequestMux0AlwaysOn59,
+		.trigger_enable=true
+	};
+	dma_conf_t conf1 = {
+		.citer=1,
+		.destination_address= (uint32_t)&ADC0->SC1[0],
+		.destination_address_adjustment=0,
+		.destination_data_transfer_size=DMA_32BIT,
+		.destination_offset=0,
+		.dma_mux_conf=mux_conf1,
+		.nbytes=sizeof(uint32_t),
+		.source_address=(uint32_t)&ADC0->SC1[0],
+		.source_data_transfer_size=DMA_32BIT,
+		.source_offset=0,
+		.major_loop_int_enable = false,
+		.callback = NULL
+	};
+
+	dma_set_config_channel(conf1);
+
+
+	/* Configure DMA to retrieve ADC value and store it in DAC */
+	dma_mux_conf_t mux_conf2 = {
+		.channel_number=1,
+		.dma_enable=true,
+		.source=40, //ADC0
+		.trigger_enable=true
+	};
+	dma_conf_t conf2 = {
+		.citer=1,
+		.destination_address=(uint32_t)&adc_result,
+		.destination_address_adjustment=0,
+		.destination_data_transfer_size=DMA_16BIT,
+		.destination_offset=0,
+		.dma_mux_conf=mux_conf2,
+		.nbytes=sizeof(uint16_t),
+		.source_address=(uint32_t)&ADC0->R[0],
+		.source_address_adjustment=0,
+		.source_data_transfer_size=DMA_16BIT,
+		.source_offset=0,
+		.major_loop_int_enable = false,
+		.callback = fsk_rx_process_sample
+	};
+	dma_set_config_channel(conf2);
+
+
+	/* pit */
+	pit_init();
+	pit_conf_t pit_conf = {
+		.callback=NULL,
+		.chain_mode=false,
+		.channel=PIT_CH2,
+		.timer_count=SAMPLING_COUNT_VALUE,
+		.timer_enable=true,
+		.timer_interrupt_enable=false
+	};
+	pit_set_channel_conf(pit_conf);
 }
 
 
-void fsk_process_sample(uint16_t sample)
+void fsk_rx_process_sample(void)
 {
     static float y_sum = 0;
     static bool idle = true;
@@ -105,6 +191,8 @@ void fsk_process_sample(uint16_t sample)
     static uint32_t curr_bit = 0;
     static uint8_t word_received = 0;
     static bool curr_parity = true;
+
+    uint16_t sample = adc_result;
 
     float newest_sample = ((float)sample)/(((float)UINT16_MAX)/2.0)-1;
     float oldest_sample = fl_popfront(&samples);

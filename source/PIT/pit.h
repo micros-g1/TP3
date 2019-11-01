@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PIT_CLOCK_FREQUENCY 50e6UL
+#define PIT_CLOCK_FREQUENCY 50000000UL
 
 typedef void(*pit_callback)(void);
 typedef enum {PIT_CH0, PIT_CH1, PIT_CH2, PIT_CH3, AMOUNT_PIT_CH} pit_channels_t;
