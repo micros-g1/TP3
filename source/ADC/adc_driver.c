@@ -3,15 +3,23 @@
 
 adc_conversion_completed_callback_t conv_completed_callback = NULL;
 
+ADC_Type * adc;
+
 void adc_init(){
+	bool isinit = false;
+	if (isinit)
+		return;
+	isinit = true;
+	adc = ADC0;
+
 	/* Clock Gating */
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 
 	/* Input channel select */
 	ADC0->SC1[0] &= ~ADC_SC1_ADCH_MASK;
 
-	/* Enable COCO interrupt */
-	//ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
+	/* Enable COCO Interrupt*/
+	ADC0->SC1[0] |= ADC_SC1_AIEN_MASK;
 
 	/* 16 bit conversion */
 	ADC0->CFG1 |= ADC_CFG1_MODE_MASK;
@@ -23,8 +31,8 @@ void adc_init(){
 	/* Hardware average enable */
 	ADC0->SC3 |= ADC_SC3_AVGE_MASK;
 
-	/* 8 samples average */
-	ADC0->SC3 |= ADC_SC3_AVGS(0b01);
+	/* 4 samples average */
+	ADC0->SC3 |= ADC_SC3_AVGS(0b00);
 
 	/* Enable Interrupts */
 	NVIC_ClearPendingIRQ(ADC0_IRQn);
@@ -85,4 +93,12 @@ void adc_set_conversion_completed_handler(adc_conversion_completed_callback_t ca
 void ADC0_IRQHandler(void){
 	if(conv_completed_callback != NULL)
 		conv_completed_callback();
+}
+
+void adc_set_interrupts_enabled(bool ie)
+{
+	if(ie)
+		NVIC_EnableIRQ(ADC0_IRQn);
+	else
+		NVIC_DisableIRQ(ADC0_IRQn);
 }

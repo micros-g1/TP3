@@ -99,4 +99,10 @@ void adc_set_conversion_completed_handler(adc_conversion_completed_callback_t ca
  */
 uint32_t adc_get_sc1_address();
 
+/**
+ * @brief Enable / Disable interrupts
+ * @param ie enabled / disabled
+ */
+void adc_set_interrupts_enabled(bool ie);
+
 #endif
