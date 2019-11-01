@@ -32,6 +32,8 @@ typedef struct{
 	uint8_t citer;
 	int32_t source_address_adjustment;
 	int32_t destination_address_adjustment;
+	uint8_t smod;
+	uint8_t dmod;
 }dma_conf_t;
 
 

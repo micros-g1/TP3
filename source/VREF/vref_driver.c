@@ -1,7 +1,13 @@
 #include "vref_driver.h"
 #include "MK64F12.h"
+#include <stdbool.h>
 
 void vref_init(){
+	static bool isinit = false;
+	if (isinit)
+		return;
+	isinit = true;
+
 	/* Clock gating */
 	SIM->SCGC4 |= SIM_SCGC4_VREF(1);
 
