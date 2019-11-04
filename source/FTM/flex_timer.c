@@ -162,6 +162,8 @@ void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
 
 	write_mod_value(module , config.mod);
 	ftms[module]->CONTROLS[config.channel].CnV=config.CnV;
+
+
 	ftms[module]->CNTIN = 0;		//resets counter value.
 
 	//set callbacks
@@ -193,15 +195,19 @@ void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t
 }
 
 void ftm_conf_port(ftm_modules_t module, ftm_channel_t channel){
+	if(module == FTM_0){
+		SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
 
-	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
+		PORTC->PCR[1] = PORT_PCR_SRE(0) | PORT_PCR_PFE(0) |
+				PORT_PCR_ODE(0) | PORT_PCR_DSE(0) | PORT_PCR_PS (2U) |
+				PORT_PCR_MUX(4) | PORT_PCR_LK (0) | PORT_PCR_IRQC(0);
 
-	PORTC->PCR[1] = PORT_PCR_SRE(0) | PORT_PCR_PFE(0) |
-			PORT_PCR_ODE(0) | PORT_PCR_DSE(0) | PORT_PCR_PS (2U) |
-			PORT_PCR_MUX(4) | PORT_PCR_LK (0) | PORT_PCR_IRQC(0);
+		// Enable or disable internal pull resistor
+		PORTC->PCR[1] &= ~PORT_PCR_PE_MASK;
+	}
+	else if(module == FTM_1){
 
-	// Enable or disable internal pull resistor
-	PORTC->PCR[1] &= ~PORT_PCR_PE_MASK;
+	}
 }
 
 //IRQS
@@ -209,10 +215,12 @@ void FTM0_IRQHandler(void){
 	ftms[FTM_0]->CONTROLS[0].CnSC &=  ~FTM_CnSC_CHF_MASK;
 	irq_callbacks[FTM_0][0](ftms[FTM_0]->CONTROLS[0].CnV);
 }
+
 void FTM1_IRQHandler(void){
 	ftms[FTM_1]->CONTROLS[1].CnSC &=  ~FTM_CnSC_CHF_MASK;
 	irq_callbacks[FTM_1][0](ftms[FTM_1]->CONTROLS[0].CnV);
 }
+
 void FTM2_IRQHandler(void){
 	ftms[FTM_2]->CONTROLS[1].CnSC &=  ~FTM_CnSC_CHF_MASK;
 	irq_callbacks[FTM_2][0](ftms[FTM_2]->CONTROLS[0].CnV);

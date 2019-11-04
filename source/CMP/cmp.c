@@ -28,7 +28,9 @@ void cmp_init(cmp_modules_t module){
 	static bool initialized = false;
 
 	if(!initialized) {
+
 		SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
+		SIM->SCGC6 |= SIM_SCGC6_FTM1_MASK;	//Clock Gating
 
 		/* send output to FTM1-CH0 */
 		SIM->SOPT4 &= ~SIM_SOPT4_FTM1CH0SRC_MASK;
@@ -78,7 +80,7 @@ void cmp_set_mod_conf(cmp_conf_t conf){
 	/*SCR REGISTER */
 	curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
 
-	cmp_mux_conf_t mux_conf = conf.mux_conf;
+
 	curr_cmp->MUXCR = 0x00;
 //	curr_cmp->MUXCR = CMP_MUXCR_PSEL(mux_conf.plus_input_mux_control) | CMP_MUXCR_MSEL(mux_conf.minus_input_mux_control);
 //	curr_cmp->MUXCR ^= (-(unsigned long)mux_conf.pass_through_mode_enabled ^ curr_cmp->MUXCR) & CMP_MUXCR_PSTM_MASK;
@@ -131,7 +133,7 @@ static void run_interrupt_callback(edges_interrupts_t interrupt){
 
 void cmp_set_dac_conf(cmp_dac_conf_t conf){
 	modules[conf.module]->DACCR = 0x00;
-	modules[conf.module]->DACCR |= CMP_DACCR_VOSEL(conf.reference_voltage_source) | CMP_DACCR_VRSEL(conf.digital_input) | CMP_DACCR_DACEN(conf.dac_enable);
+	modules[conf.module]->DACCR |= CMP_DACCR_VOSEL(conf.digital_input) | CMP_DACCR_VRSEL(conf.reference_voltage_source) | CMP_DACCR_DACEN(conf.dac_enable);
 }
 void CMP0_IRQHandler(){
 	run_interrupt_callback(interrupts_info[CMP_MOD0][CMP_FALLING]);

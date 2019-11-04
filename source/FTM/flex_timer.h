@@ -12,6 +12,8 @@
 #include "stdlib.h"
 
 typedef void (*ftm_irq_callback_t)(uint16_t capture_value);
+typedef void (*ftm_pwm_callback_t)(void);
+
 typedef enum{FTM_0, FTM_1, FTM_2, FTM_3, FTM_AMOUNT_MODULES} ftm_modules_t;
 
 typedef enum{ FTM_PSC_x1= 0x00, FTM_PSC_x2= 0x01, FTM_PSC_x4= 0x02,
