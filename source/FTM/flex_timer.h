@@ -35,7 +35,7 @@ typedef struct{
 	ftm_pwm_mode_t mode;
 	uint16_t mod;
 	uint8_t CnV;
-	ftm_pwm_callback_t callback;
+//	ftm_pwm_callback_t callback;
 }ftm_pwm_config_t;
 
 typedef struct {

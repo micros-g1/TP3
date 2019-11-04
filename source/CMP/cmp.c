@@ -139,7 +139,7 @@ void CMP0_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD0][CMP_RISING]);		//execute interruption
 	}
 	else if(modules[CMP_MOD0]->SCR & CMP_SCR_CFF_MASK){					//get flag value
-		modules[module]->SCR & CMP_SCR_CFF_MASK;						//reset flag
+		modules[CMP_MOD0]->SCR & CMP_SCR_CFF_MASK;						//reset flag
 		run_interrupt_callback(interrupts_info[CMP_MOD0][CMP_FALLING]);		//execute interruption
 	}
 }
