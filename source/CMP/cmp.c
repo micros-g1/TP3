@@ -30,6 +30,10 @@ void cmp_init(cmp_modules_t module){
 	if(!initialized) {
 		SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
 
+		/* send output to FTM1-CH0 */
+		SIM->SOPT4 &= ~SIM_SOPT4_FTM1CH0SRC_MASK;
+
+
 		edges_interrupts_t int_info = {.callback_enabled = false, .callback = NULL};
 		for (int i =0; i < CMP_AMOUNT_MODS; i++)
 			for (int j = 0; j < CMP_AMOUNT_INT_TYPES; ++j)
@@ -48,11 +52,14 @@ void cmp_init(cmp_modules_t module){
 		curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
 
 		curr_cmp->MUXCR = 0x00;
-		curr_cmp->MUXCR |= CMP_MUXCR_MSEL(0) | CMP_MUXCR_PSEL(1);
+		curr_cmp->MUXCR |= CMP_MUXCR_MSEL(1) | CMP_MUXCR_PSEL(2);
+
+		//TODO: permitir modificar. pone la salida en el pin
+		curr_cmp->CR1 |= CMP_CR1_OPE_MASK;
+		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(1);
 
 		initialized = true;
 	}
-
 	NVIC_EnableIRQ(((uint32_t *) CMP_IRQS)[module]);
 	cmp_enable_module(module, true);
 }
