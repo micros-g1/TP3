@@ -167,7 +167,7 @@ void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config){
 	ftms[module]->CNTIN = 0;		//resets counter value.
 
 	//set callbacks
-	irq_callbacks[module][config.channel] = config.callback;
+//	irq_callbacks[module][config.channel] = config.callback;
 }
 
 void ftm_set_pwm_duty_cycle(ftm_modules_t module, ftm_channel_t channel,uint8_t duty_cycle){
