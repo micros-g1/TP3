@@ -15,7 +15,6 @@ static CMP_Type * modules[CMP_AMOUNT_MODS] = {CMP0, CMP1, CMP2};
 static void cmp_enable_rising_interrupts(cmp_modules_t module, bool enable_disable);
 static void cmp_enable_falling_interrupts(cmp_modules_t module, bool enable_disable);
 
-
 typedef struct{
 	bool callback_enabled;
 	cmp_callback_t callback;
@@ -30,60 +29,47 @@ void cmp_init(cmp_modules_t module){
 	if(!initialized) {
 
 		SIM->SCGC4 |= SIM_SCGC4_CMP_MASK;
-		SIM->SCGC6 |= SIM_SCGC6_FTM1_MASK;	//Clock Gating
-
-		/* send output to FTM1-CH0 */
-		SIM->SOPT4 &= ~SIM_SOPT4_FTM1CH0SRC_MASK;
-
 
 		edges_interrupts_t int_info = {.callback_enabled = false, .callback = NULL};
 		for (int i =0; i < CMP_AMOUNT_MODS; i++)
 			for (int j = 0; j < CMP_AMOUNT_INT_TYPES; ++j)
 				interrupts_info[i][j] = int_info;
 
-		CMP_Type* curr_cmp = modules[module];
-
-		/* CR0 Register */
-		/* 1 Sample */
-		curr_cmp->CR0 = (curr_cmp->CR0 & ~CMP_CR0_FILTER_CNT_MASK) | CMP_CR0_FILTER_CNT(1);
-
-		/* CR1 REGISTER */
-		curr_cmp->CR1 |= CMP_CR1_SE(1);
-
-		/*SCR REGISTER */
-		curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
-
-		curr_cmp->MUXCR = 0x00;
-		curr_cmp->MUXCR |= CMP_MUXCR_MSEL(1) | CMP_MUXCR_PSEL(2);
-
-		//TODO: permitir modificar. pone la salida en el pin
-		curr_cmp->CR1 |= CMP_CR1_OPE_MASK;
-		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(1);
+//		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(1);
 
 		initialized = true;
 	}
 	NVIC_EnableIRQ(((uint32_t *) CMP_IRQS)[module]);
-	cmp_enable_module(module, true);
+
 }
 
-// Obsoleta!!!!
-void cmp_set_mod_conf(cmp_conf_t conf){
+void cmp_set_mod_conf(cmp_conf_t conf, cmp_dac_conf_t dac_conf){
 	CMP_Type* curr_cmp = modules[conf.module];
 
-	/* CR0 Register */
-	/* 1 Sample */
-	curr_cmp->CR0 = (curr_cmp->CR0 & ~CMP_CR0_FILTER_CNT_MASK) | CMP_CR0_FILTER_CNT(1);
+	curr_cmp->CR1 |= CMP_CR1_EN_MASK;
+	curr_cmp->CR1 |= CMP_CR1_PMODE_MASK;
 
-	/* CR1 REGISTER */
-	curr_cmp->CR1 |= CMP_CR1_SE(1);
+	if(conf.enable_output_pin)		//TODO: permitir modificar. pone la salida en el pin
+		curr_cmp->CR1 |= CMP_CR1_OPE_MASK;
+	//		SIM->SCGC6 |= SIM_SCGC6_FTM1_MASK;	//Clock Gating
 
-	/*SCR REGISTER */
-	curr_cmp->SCR &= ~CMP_SCR_DMAEN_MASK;		//disables dma by default
+			/* send output to FTM1-CH0 */
+	//		SIM->SOPT4 &= ~SIM_SOPT4_FTM1CH0SRC_MASK;
+	if(conf.invert_comparison)
+		curr_cmp->CR1 |= CMP_CR1_INV_MASK;
 
+	if(conf.comparator_output_unfiltered)
+		curr_cmp->CR1 |= CMP_CR1_COS_MASK;
 
-	curr_cmp->MUXCR = 0x00;
-//	curr_cmp->MUXCR = CMP_MUXCR_PSEL(mux_conf.plus_input_mux_control) | CMP_MUXCR_MSEL(mux_conf.minus_input_mux_control);
-//	curr_cmp->MUXCR ^= (-(unsigned long)mux_conf.pass_through_mode_enabled ^ curr_cmp->MUXCR) & CMP_MUXCR_PSTM_MASK;
+	curr_cmp->CR0 |= CMP_CR0_HYSTCTR(conf.hysteresis);
+
+	curr_cmp->MUXCR = CMP_MUXCR_PSEL(conf.mux_conf.plus_input_mux_control) | CMP_MUXCR_MSEL(conf.mux_conf.minus_input_mux_control);
+
+	cmp_set_dac_conf(dac_conf);
+
+	curr_cmp->CR0 &= ~CMP_CR0_FILTER_CNT_MASK;
+	curr_cmp->CR0 |= CMP_CR0_FILTER_CNT(conf.filter_sample_count);
+	curr_cmp->FPR = conf.filter_sample_period;
 }
 
 
@@ -132,9 +118,9 @@ static void run_interrupt_callback(edges_interrupts_t interrupt){
 }
 
 void cmp_set_dac_conf(cmp_dac_conf_t conf){
-	modules[conf.module]->DACCR = 0x00;
 	modules[conf.module]->DACCR = CMP_DACCR_DACEN(1) | CMP_DACCR_VRSEL(conf.reference_voltage_source) | CMP_DACCR_VOSEL(conf.digital_input);
 }
+
 void CMP0_IRQHandler(){
 	if(modules[CMP_MOD0]->SCR & CMP_SCR_CFR_MASK){						//get flag value
 		modules[CMP_MOD0]->SCR &= ~CMP_SCR_CFR_MASK;					//reset flag
@@ -155,7 +141,6 @@ void CMP1_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD1][CMP_FALLING]);	//execute interruption
 	}
 }
-
 void CMP2_IRQHandler(){
 	if(modules[CMP_MOD2]->SCR & CMP_SCR_CFR_MASK){		//get flag value
 		modules[CMP_MOD2]->SCR &= ~CMP_SCR_CFR_MASK;	//reset flag
@@ -166,6 +151,7 @@ void CMP2_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD2][CMP_FALLING]);		//execute interruption
 	}
 }
+
 
 
 

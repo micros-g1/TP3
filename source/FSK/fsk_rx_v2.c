@@ -23,25 +23,39 @@ fsk_v2_callback_t my_fsk_v2_callback;
 void hola();
 void fsk_rx_process_sample_v2(uint16_t elapsed_time);
 
+
 void fsk_rx_v2_init(fsk_v2_callback_t fsk_callback){
 	my_fsk_v2_callback = fsk_callback;
-	cmp_init(CMP_MOD0);
 
 	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
-	PORTC->PCR[5] = PORT_PCR_MUX(6);
-	CMP0->MUXCR = CMP_MUXCR_PSEL(CMP_IN1) | CMP_MUXCR_MSEL(CMP_IN7);
 
+	PORTC->PCR[5] = 0x00;
+	PORTC->PCR[5] |= PORT_PCR_PS (2U) | PORT_PCR_MUX(0x06);
+	PORTC->PCR[5] &= ~PORT_PCR_PE_MASK;
+
+	PORTC->PCR[7] = 0x00;
+	PORTC->PCR[7] |= PORT_PCR_PS (2U) | PORT_PCR_MUX(0x00);
+	PORTC->PCR[7] &= ~PORT_PCR_PE_MASK;
+
+	cmp_init(CMP_MOD0);
 
 	cmp_dac_conf_t conf_dac = {.dac_enable=true, .module=CMP_MOD0, .digital_input=0x01, .reference_voltage_source=1.65/(3.33/64)-1};
-	cmp_set_dac_conf(conf_dac);
+
+	cmp_mux_conf_t mux_conf = {.minus_input_mux_control=CMP_IN7, .plus_input_mux_control=CMP_IN1};
+
+	cmp_conf_t conf = {.high_power=true, .enable_output_pin=true, .hysteresis=CMP_HYST3, .invert_comparison=false,
+						.comparator_output_unfiltered=false, .mux_conf=mux_conf, .dma_enable=false,
+						.sample_enable=true, .filter_sample_count=200, .filter_sample_period=200};
+
+	cmp_set_mod_conf(conf, conf_dac);
 
 	cmp_enable_interrupt_type(CMP_MOD0, true, hola, CMP_FALLING);
 
-	ftm_init(FTM_1, FTM_PSC_x1);
-	ftm_input_capture_config_t input_conf = {.channel=FTM_CHNL_0, .mod=((1<<16)-1),.mode=FTM_IC_BOTH_EDGES, .filter_value=0x00, .callback=fsk_rx_process_sample_v2};
-	ftm_set_input_capture_conf(FTM_1, input_conf);
-//	ftm_conf_port(FTM_1, FTM_CHNL_0);
-	ftm_enable_clock(FTM_1, true);
+//	ftm_init(FTM_0, FTM_PSC_x1);
+//	ftm_input_capture_config_t input_conf = {.channel=FTM_CHNL_0, .mod=((1<<16)-1),.mode=FTM_IC_BOTH_EDGES, .filter_value=0x00, .callback=fsk_rx_process_sample_v2};
+//	ftm_set_input_capture_conf(FTM_0, input_conf);
+//	ftm_conf_port(FTM_0, FTM_CHNL_0);
+//	ftm_enable_clock(FTM_0, true);
 }
 
 void fsk_rx_process_sample_v2(uint16_t elapsed_time){
@@ -98,3 +112,4 @@ void fsk_rx_process_sample_v2(uint16_t elapsed_time){
 void hola(){
 
 }
+
