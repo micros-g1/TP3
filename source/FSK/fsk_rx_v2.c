@@ -8,6 +8,7 @@
 #include "CMP/cmp.h"
 #include "FTM/flex_timer.h"
 #include <FSK/fsk.h>
+#include "MK64F12.h"
 
 #define FREQ_1      1200.0
 #define FREQ_0      2200.0
@@ -19,19 +20,22 @@
 #define SYMBOL_TOL	12
 
 fsk_v2_callback_t my_fsk_v2_callback;
-
+void hola();
 void fsk_rx_process_sample_v2(uint16_t elapsed_time);
 
 void fsk_rx_v2_init(fsk_v2_callback_t fsk_callback){
-
 	my_fsk_v2_callback = fsk_callback;
 	cmp_init(CMP_MOD0);
 
+	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
 	PORTC->PCR[5] = PORT_PCR_MUX(6);
 	CMP0->MUXCR = CMP_MUXCR_PSEL(CMP_IN1) | CMP_MUXCR_MSEL(CMP_IN7);
 
+
 	cmp_dac_conf_t conf_dac = {.dac_enable=true, .module=CMP_MOD0, .digital_input=0x01, .reference_voltage_source=1.65/(3.33/64)-1};
 	cmp_set_dac_conf(conf_dac);
+
+	cmp_enable_interrupt_type(CMP_MOD0, true, hola, CMP_FALLING);
 
 	ftm_init(FTM_1, FTM_PSC_x1);
 	ftm_input_capture_config_t input_conf = {.channel=FTM_CHNL_0, .mod=((1<<16)-1),.mode=FTM_IC_BOTH_EDGES, .filter_value=0x00, .callback=fsk_rx_process_sample_v2};
@@ -91,3 +95,6 @@ void fsk_rx_process_sample_v2(uint16_t elapsed_time){
     }
 }
 
+void hola(){
+
+}

@@ -187,7 +187,7 @@ void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t
 	//CALLBACK
 	irq_callbacks[module][config.channel] = config.callback;
 
-	(ftms[module]->CONTROLS[config.channel].CnSC) &= ~FTM_CnSC_DMA_MASK;
+	ftms[module]->CONTROLS[config.channel].CnSC &= ~FTM_CnSC_DMA_MASK;
 	ftms[module]->CONTROLS[config.channel].CnSC |= FTM_CnSC_CHIE_MASK;
 
 	ftms[module]->CNTIN=0;		//resets the counter

@@ -133,7 +133,7 @@ static void run_interrupt_callback(edges_interrupts_t interrupt){
 
 void cmp_set_dac_conf(cmp_dac_conf_t conf){
 	modules[conf.module]->DACCR = 0x00;
-	modules[conf.module]->DACCR |= CMP_DACCR_VOSEL(conf.digital_input) | CMP_DACCR_VRSEL(conf.reference_voltage_source) | CMP_DACCR_DACEN(conf.dac_enable);
+	modules[conf.module]->DACCR = CMP_DACCR_DACEN(1) | CMP_DACCR_VRSEL(conf.reference_voltage_source) | CMP_DACCR_VOSEL(conf.digital_input);
 }
 void CMP0_IRQHandler(){
 	if(modules[CMP_MOD0]->SCR & CMP_SCR_CFR_MASK){						//get flag value
@@ -141,7 +141,7 @@ void CMP0_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD0][CMP_RISING]);		//execute interruption
 	}
 	else if(modules[CMP_MOD0]->SCR & CMP_SCR_CFF_MASK){					//get flag value
-		modules[CMP_MOD0]->SCR & CMP_SCR_CFF_MASK;						//reset flag
+		modules[CMP_MOD0]->SCR &= ~CMP_SCR_CFF_MASK;						//reset flag
 		run_interrupt_callback(interrupts_info[CMP_MOD0][CMP_FALLING]);		//execute interruption
 	}
 }
@@ -151,7 +151,7 @@ void CMP1_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD1][CMP_RISING]); //execute interruption
 	}
 	else if(modules[CMP_MOD1]->SCR & CMP_SCR_CFF_MASK){				//get flag value
-		modules[CMP_MOD1]->SCR & CMP_SCR_CFF_MASK;					//reset flag
+		modules[CMP_MOD1]->SCR &= ~CMP_SCR_CFF_MASK;					//reset flag
 		run_interrupt_callback(interrupts_info[CMP_MOD1][CMP_FALLING]);	//execute interruption
 	}
 }
