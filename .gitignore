@@ -4,3 +4,5 @@
 !/Doxygen/Doxyfile.ini
 !/Doxygen/Howto.md
 /.settings
+*.launch
+*.axf

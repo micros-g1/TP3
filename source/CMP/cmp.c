@@ -35,19 +35,26 @@ void cmp_init(cmp_modules_t module){
 			for (int j = 0; j < CMP_AMOUNT_INT_TYPES; ++j)
 				interrupts_info[i][j] = int_info;
 
+		modules[module]->CR1 |= CMP_CR1_EN_MASK;
 //		SIM->SOPT4 |= SIM_SOPT4_FTM1CH0SRC(1);
 
 		initialized = true;
 	}
-	NVIC_EnableIRQ(((uint32_t *) CMP_IRQS)[module]);
+
+	switch (module) {
+	case 0:	NVIC_EnableIRQ(CMP0_IRQn);	break;
+	case 1: NVIC_EnableIRQ(CMP1_IRQn);	break;
+	case 2: NVIC_EnableIRQ(CMP2_IRQn);	break;
+	default:							break;
+	}
+	//NVIC_EnableIRQ(((uint32_t *) CMP_IRQS)[module]);
 
 }
 
 void cmp_set_mod_conf(cmp_conf_t conf, cmp_dac_conf_t dac_conf){
 	CMP_Type* curr_cmp = modules[conf.module];
 
-	curr_cmp->CR1 |= CMP_CR1_EN_MASK;
-	curr_cmp->CR1 |= CMP_CR1_PMODE_MASK;
+	//curr_cmp->CR1 |= CMP_CR1_PMODE_MASK;
 
 	if(conf.enable_output_pin)		//TODO: permitir modificar. pone la salida en el pin
 		curr_cmp->CR1 |= CMP_CR1_OPE_MASK;
@@ -118,7 +125,7 @@ static void run_interrupt_callback(edges_interrupts_t interrupt){
 }
 
 void cmp_set_dac_conf(cmp_dac_conf_t conf){
-	modules[conf.module]->DACCR = CMP_DACCR_DACEN(1) | CMP_DACCR_VRSEL(conf.reference_voltage_source) | CMP_DACCR_VOSEL(conf.digital_input);
+	modules[conf.module]->DACCR = CMP_DACCR_DACEN(1) | CMP_DACCR_VRSEL(conf.digital_input) | CMP_DACCR_VOSEL(conf.reference_voltage_source);
 }
 
 void CMP0_IRQHandler(){
@@ -147,7 +154,7 @@ void CMP2_IRQHandler(){
 		run_interrupt_callback(interrupts_info[CMP_MOD2][CMP_RISING]);	//execute interruption
 	}
 	else if(modules[CMP_MOD2]->SCR & CMP_SCR_CFF_MASK){	//get flag value
-		modules[CMP_MOD2]->SCR & CMP_SCR_CFF_MASK;		//reset flag
+		modules[CMP_MOD2]->SCR &= CMP_SCR_CFF_MASK;		//reset flag
 		run_interrupt_callback(interrupts_info[CMP_MOD2][CMP_FALLING]);		//execute interruption
 	}
 }
