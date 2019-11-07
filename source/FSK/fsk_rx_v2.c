@@ -24,7 +24,7 @@ void hola();
 void fsk_rx_process_sample_v2(uint16_t elapsed_time);
 
 
-void fsk_rx_v2_init(fsk_v2_callback_t fsk_callback){
+void fsk_rx_init(fsk_v2_callback_t fsk_callback){
 	my_fsk_v2_callback = fsk_callback;
 
 	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;

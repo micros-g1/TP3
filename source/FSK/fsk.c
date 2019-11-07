@@ -6,10 +6,17 @@
  */
 
 #include <FSK/fsk.h>
-#include <FSK/fsk_tx.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+#if FSK_VERSION == 1
 #include <FSK/fsk_rx.h>
+#include <FSK/fsk_tx.h>
+#else
+#include <FSK/fsk_rx_v2.h>
+#include <FSK/fsk_tx_v2.h>
+#endif
+
 
 #define USING_ODD_PARITY true
 

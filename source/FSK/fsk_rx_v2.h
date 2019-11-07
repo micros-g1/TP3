@@ -13,6 +13,6 @@
 
 typedef void (* fsk_v2_callback_t)(uint8_t);
 
-void fsk_rx_v2_init(fsk_v2_callback_t fsk_callback);
+void fsk_rx_init(fsk_v2_callback_t fsk_callback);
 
 #endif /* FSK_FSK_RX_V2_H_ */
