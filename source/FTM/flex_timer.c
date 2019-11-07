@@ -184,6 +184,7 @@ void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t
 				FTM_FILTER_CH2FVAL(config.filter_value), FTM_FILTER_CH3FVAL(config.filter_value)};
 		ftms[module]->FILTER |= filters_masks[config.channel];
 	}
+
 	//CALLBACK
 	irq_callbacks[module][config.channel] = config.callback;
 
