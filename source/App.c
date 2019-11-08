@@ -43,6 +43,7 @@ static uint8_t buffer[BUFFER_SIZE];
 /* Función que se llama una vez, al comienzo del programa */
 void App_Init (void){
 	fskInit();
+
 	uart_cfg_t config;
 	config.baudrate = UART_BAUD_RATE;
 	config.parity = true;

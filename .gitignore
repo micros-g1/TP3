@@ -4,3 +4,4 @@
 !/Doxygen/Doxyfile.ini
 !/Doxygen/Howto.md
 /.settings
+source/.idea/
