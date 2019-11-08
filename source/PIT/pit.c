@@ -88,4 +88,3 @@ void PIT3_IRQHandler(void){
 	if(irq_callbacks[PIT_CH3] != NULL)
 		irq_callbacks[PIT_CH3]();
 }
-

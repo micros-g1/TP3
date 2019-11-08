@@ -8,3 +8,5 @@
 *.axf
 *.xml
 /source/.idea/
+source/.idea/
+*.cproject

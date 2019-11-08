@@ -35,10 +35,10 @@ typedef void(*uart_tx_irq_t)();
  * VARIABLES WITH FILE SCOPE
  ******************************************************************************/
 
-static UART_Type * uarts[UART_N_IDS] = {UART0, UART1, UART2, UART3, UART4}; // pointers to UART structures
-static bool uart_active[UART_N_IDS] = {false, false, false, false, false};	// true if a given UART has been initialized
+static UART_Type * const uarts[UART_N_IDS] = {UART0, UART1, UART2, UART3, UART4}; // pointers to UART structures
+static bool uart_active[UART_N_IDS];	// true if a given UART has been initialized
 
-static pin_t pins [UART_N_IDS][2] = {	// default pins for each UART
+static const pin_t pins [UART_N_IDS][2] = {	// default pins for each UART
 				/* RX					TX 					*/
 /* UART_0 */	{ PORTNUM2PIN(PB, 16),	PORTNUM2PIN(PB, 17)},
 /* UART_1 */	{ PORTNUM2PIN(PC, 03),	PORTNUM2PIN(PC, 04)},
@@ -47,7 +47,7 @@ static pin_t pins [UART_N_IDS][2] = {	// default pins for each UART
 /* UART_4 */	{ PORTNUM2PIN(PC, 14),	PORTNUM2PIN(PC, 15)}
 };
 
-static uint32_t clock_gating_masks[UART_N_IDS] = { SIM_SCGC4_UART0_MASK, SIM_SCGC4_UART1_MASK,
+static const uint32_t clock_gating_masks[UART_N_IDS] = { SIM_SCGC4_UART0_MASK, SIM_SCGC4_UART1_MASK,
 		SIM_SCGC4_UART2_MASK, SIM_SCGC4_UART3_MASK, SIM_SCGC1_UART4_MASK };
 
 static queue_t tx_q[UART_N_IDS];	// pending trasmissions
@@ -291,11 +291,12 @@ void uart_irq_handler(uint8_t id)
 		}
 	}
 	else {
-			uarts[id]->D = q_popfront(&tx_q[id]);
-		}
-		if(!tx_q[id].len) {
-			uarts[id]->C2 &= ~UART_C2_TIE_MASK; // message finished, disable transmission interrupts
-		}
+		uarts[id]->D = q_popfront(&tx_q[id]);
+	}
+
+	if(!tx_q[id].len) {
+		uarts[id]->C2 &= ~UART_C2_TIE_MASK; // message finished, disable transmission interrupts
+	}
 }
 
 

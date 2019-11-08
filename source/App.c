@@ -10,9 +10,10 @@
 #include "board.h"
 #include "FSK/fsk.h"
 #include "UART/uart.h"
+#include "util/clock.h"
 #include <stdlib.h>
+#include "FSK/fsk_rx.h"
 #include <string.h>
-
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -22,8 +23,7 @@
 #define UART_BAUD_RATE	9600
 
 #define BUFFER_SIZE		255
-#define N_POINTS		256
-#define M_PI 			3.14159265358979323846
+
 
 /******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -35,13 +35,15 @@
  *******************************************************************************
  ******************************************************************************/
 
+
 static uint8_t buffer[BUFFER_SIZE];
-//static uint16_t table[N_POINTS];
-//void reset(uint8_t count_value);
+
+// extern uint16_t adc_result;
 
 /* Función que se llama una vez, al comienzo del programa */
 void App_Init (void){
 	fskInit();
+
 	uart_cfg_t config;
 	config.baudrate = UART_BAUD_RATE;
 	config.parity = true;

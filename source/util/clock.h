@@ -12,7 +12,7 @@
 
 typedef uint32_t clock_t;
 
-#define CLOCKS_PER_SECOND	8000U
+#define CLOCKS_PER_SECOND	100000UL
 
 void clock_init(void);
 clock_t get_clock(void);

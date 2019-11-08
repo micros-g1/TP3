@@ -91,16 +91,16 @@ void dma_set_config_channel(dma_conf_t config){
 		dma->TCD[config.dma_mux_conf.channel_number].CSR = 0X00;
 		dma->TCD[config.dma_mux_conf.channel_number].CSR = DMA_CSR_BWC(0x00) |
 				DMA_CSR_MAJORLINKCH(config.dma_mux_conf.channel_number) | DMA_CSR_MAJORELINK(0x00) | DMA_CSR_ESG(0x00) |
-				DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(1) | DMA_CSR_START(0);
+				DMA_CSR_DREQ(0x00) | DMA_CSR_INTHALF(0) | DMA_CSR_INTMAJOR(0) | DMA_CSR_START(0);
 
 		dma->TCD[config.dma_mux_conf.channel_number].ATTR |= DMA_ATTR_SMOD(config.smod) | DMA_ATTR_DMOD(config.dmod);
 
-		if (config.major_loop_int_enable) {
+		if (config.callback != NULL) {
 			NVIC_EnableIRQ(DMA0_IRQn+config.dma_mux_conf.channel_number);
 			callbacks[config.dma_mux_conf.channel_number] = config.callback;
-			dma->TCD[config.dma_mux_conf.channel_number].CSR |= DMA_CSR_INTMAJOR_MASK;
 		}
-
+		if(config.major_loop_int_enable)
+			dma->TCD[config.dma_mux_conf.channel_number].CSR |= DMA_CSR_INTMAJOR_MASK;
 	}
 }
 
@@ -135,9 +135,21 @@ bool dma_get_finished_transfer(int channel_number){
 
 void DMA_IRQHandler(uint8_t channel_number)
 {
+	DMA_Type * dma = DMA0;
 	if (callbacks[channel_number] != NULL) {
 		callbacks[channel_number]();
 	}
+	dma->CINT |= DMA_CINT_CINT(channel_number);
+}
+
+
+void dma_mjr_loop_interrupt_enable(uint8_t channel_number, bool ie)
+{
+	DMA_Type * dma = DMA0;
+	if(ie)
+		dma->TCD[channel_number].CSR |= DMA_CSR_INTMAJOR_MASK;
+	else
+		dma->TCD[channel_number].CSR &= ~DMA_CSR_INTMAJOR_MASK;
 }
 
 void DMA0_IRQHandler(void)

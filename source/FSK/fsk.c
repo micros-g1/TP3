@@ -38,9 +38,12 @@ void __fsk_byte_received_callback(uint8_t byte);
 void fskInit ()
 {
 	rx_in_index = rx_out_index = 0;
-	tx_in_index = rx_out_index = 0;
+	tx_in_index = tx_out_index = 0;
 	tx_total_elements = rx_total_elements = 0;
-	//TODO: Enable everything else
+
+	fsk_rx_init(__fsk_byte_received_callback);
+	fsk_rx_enable_interrupts();
+
 	fsk_tx_init(__fsk_next_bit_callback);
 	fsk_tx_interrupt_enable(true);
 	fsk_rx_init(__fsk_byte_received_callback);
@@ -49,25 +52,24 @@ void fskInit ()
 bool fskIsRxMsg()
 {
 	bool got_message = false;
-	//TODO: Disable interrupts
+	fsk_rx_disable_interrupts();
 	got_message = rx_total_elements != 0;
-	//TODO: Enable interrupts
+	fsk_rx_enable_interrupts();
 	return got_message;
 }
 
 size_t fskGetRxMsgLength()
 {
 	size_t message_length;
-	//TODO: Disable interrupts
+	fsk_rx_disable_interrupts();
 	message_length = rx_total_elements;
-	//TODO: Enable interrupts
+	fsk_rx_enable_interrupts();
 	return message_length;
 }
 
 size_t fskReadMsg(uint8_t * msg, size_t cant)
 {
-
-	//TODO: Disable interrupts
+	fsk_rx_disable_interrupts();
 	size_t bytes_to_copy = __MIN(rx_total_elements,cant);
 	for(size_t i = 0 ; i < bytes_to_copy ; i++)
 	{
@@ -76,7 +78,7 @@ size_t fskReadMsg(uint8_t * msg, size_t cant)
 		if(rx_out_index == FSK_RX_QUEUE_SIZE)
 			rx_out_index = 0;
 	}
-	//TODO: Enable interrupts
+	fsk_rx_enable_interrupts();
 	return bytes_to_copy;
 }
 
