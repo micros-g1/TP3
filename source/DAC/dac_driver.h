@@ -145,6 +145,7 @@ void dac_trigger_output();
  * @brief DAC0 data register address
  * @return returns a uint32_t with the DAC0 Result address
  */
-uint32_t dac_read_data_address();
+uint32_t dac_data0_address();
+
 
 #endif

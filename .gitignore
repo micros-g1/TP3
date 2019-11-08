@@ -5,4 +5,6 @@
 !/Doxygen/Howto.md
 /.settings
 *.launch
-*.mex
+*.axf
+*.xml
+/source/.idea/

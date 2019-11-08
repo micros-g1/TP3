@@ -7,48 +7,60 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-#include "DAC/dac_driver.h"
-#include "ADC/adc_driver.h"
-#include "VREF/vref_driver.h"
-#include "PIT/pit.h"
 #include "board.h"
-#include "gpio.h"
-#include "stdlib.h"
+#include "FSK/fsk.h"
+#include "UART/uart.h"
+#include <stdlib.h>
+#include <string.h>
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define M_PI 3.14159265358979323846
+
+#define UART_ID			0
+#define UART_BAUD_RATE	9600
+
+#define BUFFER_SIZE		255
+#define N_POINTS		256
+#define M_PI 			3.14159265358979323846
+
 /******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static void delayLoop(uint32_t veces);
-int min(int x, int y);
-float map_to_range(float a, float b, float c, float d, float x);
-void toggle_pin();
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
 
-uint16_t value;
-bool state;
+static uint8_t buffer[BUFFER_SIZE];
+//static uint16_t table[N_POINTS];
+//void reset(uint8_t count_value);
+
 /* Función que se llama una vez, al comienzo del programa */
-void App_Init (void)
-{
-	state = true;
-	gpioMode(PIN_LED_BLUE, OUTPUT);
-	pit_init();
-	pit_conf_t config = {.callback=toggle_pin, .chain_mode=false, .channel=PIT_CH0, .timer_count=0xFFFF, .timer_enable=true, .timer_interrupt_enable=true};
-	pit_set_channel_conf(config);
+void App_Init (void){
+	fskInit();
+	uart_cfg_t config;
+	config.baudrate = UART_BAUD_RATE;
+	config.parity = true;
+	config.odd_parity = true;
+	uartInit(UART_ID, config);
 }
 
 
 void App_Run (void)
 {
+	if (uartIsRxMsg(UART_ID)) {
+		uint8_t n = uartReadMsg(UART_ID, buffer, BUFFER_SIZE);
+		fskWriteMsg(buffer, n);
+	}
 
+	if (fskIsRxMsg()) {
+		uint8_t n = fskReadMsg(buffer, BUFFER_SIZE);
+		uartWriteMsg(UART_ID, buffer, n);
+	}
 }
 
 /*******************************************************************************
@@ -56,25 +68,6 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-static void delayLoop(uint32_t veces)
-{
-    while (veces--);
-}
 
-int min(int x, int y){
-  return (x < y) ? x : y;
-}
-
-float map_to_range(float a, float b, float c, float d, float x){
-	float ret = c + (d-c)/(b-a) * (x - a);
-	return ret;
-}
-
-void toggle_pin(){
-	static bool initialized = false;
-	if(initialized) return;
-	gpioToggle(PIN_LED_BLUE);
-	initialized = true;
-}
 /*******************************************************************************
  ******************************************************************************/
