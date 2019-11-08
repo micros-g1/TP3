@@ -15,4 +15,7 @@ typedef void (* fsk_v2_callback_t)(uint8_t);
 
 void fsk_rx_init(fsk_v2_callback_t fsk_callback);
 
+void fsk_rx_disable_interrupts();
+void fsk_rx_enable_interrupts();
+
 #endif /* FSK_FSK_RX_V2_H_ */

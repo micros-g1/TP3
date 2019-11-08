@@ -18,7 +18,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define FSK_VERSION	2	// if not 1 will assume 2
+#define FSK_VERSION	1	// if not 1 will assume 2
 
 #define FSK_TX_QUEUE_SIZE 255
 #define FSK_RX_QUEUE_SIZE 255

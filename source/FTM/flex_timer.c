@@ -19,9 +19,9 @@
 /*****************************************************
  * *****************STATIC VARIABLES******************
  *****************************************************/
-static FTM_Type * ftms[FTM_AMOUNT_MODULES] = FTM_BASE_PTRS;
+static FTM_Type * const ftms[FTM_AMOUNT_MODULES] = FTM_BASE_PTRS;
 static ftm_irq_callback_t irq_callbacks[FTM_AMOUNT_MODULES][FTM_AMOUNT_CHANNELS];
-static int ftm_irqs[FTM_AMOUNT_MODULES] = {FTM0_IRQn, FTM1_IRQn, FTM2_IRQn, FTM3_IRQn};
+static int const ftm_irqs[FTM_AMOUNT_MODULES] = {FTM0_IRQn, FTM1_IRQn, FTM2_IRQn, FTM3_IRQn};
 
 //for pwm configurations
 static uint32_t const pwm_combine_masks[4]= {FTM_COMBINE_COMBINE0_MASK, FTM_COMBINE_COMBINE1_MASK,
@@ -36,7 +36,7 @@ void write_mod_value(ftm_modules_t module, uint16_t mod_value);
  * *****************FUNCTION IMPLEMENTATION***********
  *****************************************************/
 void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
-	static bool initiliazed[FTM_AMOUNT_MODULES] = {0, 0, 0, 0};
+	static bool initiliazed[FTM_AMOUNT_MODULES];
 	if(initiliazed[module]) return;
 
 	if (module == FTM_0)

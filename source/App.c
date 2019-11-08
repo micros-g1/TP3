@@ -10,7 +10,6 @@
 #include "board.h"
 #include "FSK/fsk.h"
 #include "UART/uart.h"
-#include "util/clock.h"
 #include <stdlib.h>
 #include "FSK/fsk_rx.h"
 #include <string.h>

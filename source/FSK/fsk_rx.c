@@ -15,7 +15,6 @@
 #include "MK64F12.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "util/clock.h"
 #include "gpio.h"
 
 #define FREQ_1      1200.0
@@ -98,46 +97,46 @@ static void start_convertion_callback();
 void fsk_rx_init(fsk_callback_t cb)
 {
 	static bool isinit = false;
-	    if (isinit)
-	        return;
-	    isinit = true;
-	    idle = true;
-	    y_sum = 0;
-	    callback = cb;
+	if (isinit)
+		return;
+	isinit = true;
+	idle = true;
+	y_sum = 0;
+	callback = cb;
 
-	    flist_t * lists[N_LISTS] = {&samples, &prod_delay, &y};
-	    float * buffers[N_LISTS] = {samples_buffer, prod_delay_buffer, y_buffer};
-	    uint32_t sizes[N_LISTS] = {D_SAMPLES, FILTER_N, WAVE_LEN};
-	    float init_value[N_LISTS] = {0, 0, -1};
+	flist_t * lists[N_LISTS] = {&samples, &prod_delay, &y};
+	float * buffers[N_LISTS] = {samples_buffer, prod_delay_buffer, y_buffer};
+	uint32_t sizes[N_LISTS] = {D_SAMPLES, FILTER_N, WAVE_LEN};
+	float init_value[N_LISTS] = {0, 0, -1};
 
-	    for (unsigned int i = 0; i < N_LISTS; i++) {
-	        fl_init(lists[i], buffers[i], sizes[i]);
-	        for (unsigned int j = 0; j < sizes[i]; j++) {
-	            fl_pushback(lists[i], init_value[i]);
-	        }
-	    }
+	for (unsigned int i = 0; i < N_LISTS; i++) {
+		fl_init(lists[i], buffers[i], sizes[i]);
+		for (unsigned int j = 0; j < sizes[i]; j++) {
+			fl_pushback(lists[i], init_value[i]);
+		}
+	}
 
-	    y_sum = -1*WAVE_LEN;
+	y_sum = -1*WAVE_LEN;
 
-		vref_init();
+	vref_init();
 
-		adc_init();
-		adc_trigger_select(ADC_SOFTWARE_TRIGGER);
-		adc_set_conversion_completed_handler(fsk_rx_process_sample);
+	adc_init();
+	adc_trigger_select(ADC_SOFTWARE_TRIGGER);
+	adc_set_conversion_completed_handler(fsk_rx_process_sample);
 
-		/* pit */
-		pit_init();
-		pit_conf_t pit_conf = {
-			.callback=start_convertion_callback,
-			.chain_mode=false,
-			.channel=PIT_CH1,
-			.timer_count=SAMPLING_COUNT_VALUE,
-			.timer_enable=true,
-			.timer_interrupt_enable=true
-		};
-		pit_set_channel_conf(pit_conf);
-		gpioMode(PORTNUM2PIN(PA, 1), OUTPUT);
-		gpioMode(PORTNUM2PIN(PB, 23), OUTPUT);
+	/* pit */
+	pit_init();
+	pit_conf_t pit_conf = {
+		.callback=start_convertion_callback,
+		.chain_mode=false,
+		.channel=PIT_CH1,
+		.timer_count=SAMPLING_COUNT_VALUE,
+		.timer_enable=true,
+		.timer_interrupt_enable=true
+	};
+	pit_set_channel_conf(pit_conf);
+	gpioMode(PORTNUM2PIN(PA, 1), OUTPUT);
+	gpioMode(PORTNUM2PIN(PB, 23), OUTPUT);
 }
 
 

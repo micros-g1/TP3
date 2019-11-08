@@ -120,6 +120,20 @@ void fsk_rx_process_sample_v2(uint16_t elapsed_time){
 //	ftm_reset_counter_value(FTM_0);
 }
 
+
+void fsk_rx_disable_interrupts()
+{
+	;
+}
+
+void fsk_rx_enable_interrupts()
+{
+	;
+}
+
+
+
+
 void hola(){
 
 }
