@@ -4,5 +4,9 @@
 !/Doxygen/Doxyfile.ini
 !/Doxygen/Howto.md
 /.settings
+*.launch
+*.axf
+*.xml
+/source/.idea/
 source/.idea/
 *.cproject

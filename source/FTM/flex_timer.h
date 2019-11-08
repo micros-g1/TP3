@@ -8,10 +8,12 @@
 #ifndef ftm_FLEX_TIMER_H_
 #define ftm_FLEX_TIMER_H_
 #include "MK64F12.h"
-#include <stdbool.h>
-#include <stdint.h>
+#include "stdbool.h"
+#include "stdlib.h"
 
-typedef void (*ftm_irq_callback_t)(void);
+typedef void (*ftm_irq_callback_t)(uint16_t capture_value);
+typedef void (*ftm_pwm_callback_t)(void);
+
 typedef enum{FTM_0, FTM_1, FTM_2, FTM_3, FTM_AMOUNT_MODULES} ftm_modules_t;
 
 typedef enum{ FTM_PSC_x1= 0x00, FTM_PSC_x2= 0x01, FTM_PSC_x4= 0x02,
@@ -24,26 +26,34 @@ typedef enum{ ftm_CHNL_0, ftm_CHNL_1, ftm_CHNL_2, FTM_CHNL_3, FTM_CHNL_4, FTM_CH
 
 typedef enum{ FTM_IC_RISING_EDGE=1, FTM_IC_FALLING_EDGE, FTM_IC_BOTH_EDGES}ftm_input_capture_mode;
 
+typedef enum{
+	FTM_SYSTEM_CLK = 0x01,
+	FTM_FIXED_FREQ_CLK = 0x02,
+	FTM_EXTERN_CLK = 0x03
+}ftm_clk_src_t;
+
 typedef struct{
 	ftm_channel_t channel;
 	ftm_pwm_mode_t mode;
-	bool enable_dma;
 	uint16_t mod;
 	uint8_t CnV;
+//	ftm_pwm_callback_t callback;
 }ftm_pwm_config_t;
 
 typedef struct {
 	ftm_channel_t channel;
 	ftm_irq_callback_t callback;
-	bool enable_dma;
 	uint16_t mod;
 	ftm_input_capture_mode mode;
 	uint32_t filter_value;		//Only channels 0,1,2 and 3 can have filter
 }ftm_input_capture_config_t;
 
 
+
 void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config);
-void ftm_start_stop_clock(ftm_modules_t module, bool start_stop);
+void ftm_set_clk_src(ftm_modules_t module, ftm_clk_src_t source);
+
+void ftm_enable_clock(ftm_modules_t module, bool enable);
 void ftm_enable_overflow_interrupts(ftm_modules_t module, bool enable_disable);
 void ftm_set_prescaler(ftm_modules_t module , ftm_prescaler_t prescaler_config);
 bool ftm_has_overflowed(ftm_modules_t module);
@@ -53,6 +63,7 @@ uint16_t ftm_read_counter_value(ftm_modules_t module);
 uint16_t ftm_get_mod_value(ftm_modules_t module);
 
 void ftm_set_pwm_conf(ftm_modules_t module, ftm_pwm_config_t config);
+void ftm_set_pwm_duty_cycle(ftm_modules_t module, ftm_channel_t channel,uint8_t duty_cycle);
 void ftm_set_input_capture_conf(ftm_modules_t module, ftm_input_capture_config_t config);
 void ftm_enable_dma(ftm_modules_t module, bool enable_disable);
 

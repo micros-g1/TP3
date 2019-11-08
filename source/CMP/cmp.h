@@ -41,6 +41,7 @@ typedef struct{
 	bool high_power;
 	bool invert_comparison;
 	bool comparator_output_unfiltered;
+	bool enable_output_pin;
 	uint8_t filter_sample_period;
 	bool dma_enable;
 	cmp_mux_conf_t mux_conf;
@@ -54,7 +55,7 @@ typedef struct{
 }cmp_dac_conf_t;
 
 void cmp_init(cmp_modules_t module);
-void cmp_set_mod_conf(cmp_conf_t conf);
+void cmp_set_mod_conf(cmp_conf_t conf, cmp_dac_conf_t dac_conf);
 void cmp_set_dac_conf(cmp_dac_conf_t conf);
 
 void cmp_enable_module(cmp_modules_t module, bool enable_disable);

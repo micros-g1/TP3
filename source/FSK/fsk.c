@@ -6,10 +6,17 @@
  */
 
 #include <FSK/fsk.h>
-#include <FSK/fsk_tx.h>
 #include <stdbool.h>
 #include <stdint.h>
-//#include <FSK/fsk_rx.h>
+
+#if FSK_VERSION == 1
+#include <FSK/fsk_rx.h>
+#include <FSK/fsk_tx.h>
+#else
+#include <FSK/fsk_rx_v2.h>
+#include <FSK/fsk_tx_v2.h>
+#endif
+
 
 #define USING_ODD_PARITY true
 
@@ -26,6 +33,8 @@ static bool __fsk_next_bit_callback();
 
 #define __MIN(x,y) ( (x) < (y) ? (x) : (y) )
 
+void __fsk_byte_received_callback(uint8_t byte);
+
 void fskInit ()
 {
 	rx_in_index = rx_out_index = 0;
@@ -37,6 +46,7 @@ void fskInit ()
 
 	fsk_tx_init(__fsk_next_bit_callback);
 	fsk_tx_interrupt_enable(true);
+	fsk_rx_init(__fsk_byte_received_callback);
 }
 
 bool fskIsRxMsg()
@@ -99,7 +109,6 @@ bool fskIsTxMsgComplete()
 
 static bool __fsk_next_bit_callback()
 {
-	return true;
 	//Default values
 	static bool started = false;
 	static uint8_t bit_mask;
