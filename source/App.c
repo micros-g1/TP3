@@ -10,13 +10,9 @@
 #include "board.h"
 #include "FSK/fsk.h"
 #include "UART/uart.h"
-//#include "util/clock.h"
 #include <stdlib.h>
 #include <string.h>
-#include "math.h"
-#include "MK64F12.h"
-//#include <FSK/fsk_rx_v2.h>
-//#include <FTM/flex_timer.h>
+
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -32,10 +28,6 @@
 /******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-//float map_to_range(float source_min, float source_max, float dest_min, float dest_max, float x);
-//void change_pwm_config();
-//void push_new_sample_to_pwm();
 
 /*******************************************************************************
  *******************************************************************************
@@ -76,20 +68,6 @@ void App_Run (void)
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-//int i = 0;
-//void push_new_sample_to_pwm(){
-//	ftm_set_pwm_duty_cycle(FTM_0, FTM_CHNL_0, table[i]);
-//	i = (i + 1) % N_POINTS;
-//}
-//
-//void change_pwm_config(){
-//
-//}
-//
-//float map_to_range(float source_min, float source_max, float dest_min, float dest_max, float x){
-//	float ret = dest_min + (dest_max-dest_min)/(source_max-source_min) * (x - source_min);
-//	return ret;
-//}
-//
+
 /*******************************************************************************
  ******************************************************************************/
