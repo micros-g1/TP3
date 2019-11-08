@@ -6,3 +6,5 @@
 /.settings
 *.launch
 *.axf
+*.xml
+/source/.idea/
