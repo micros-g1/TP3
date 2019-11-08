@@ -36,9 +36,8 @@ void write_mod_value(ftm_modules_t module, uint16_t mod_value);
  * *****************FUNCTION IMPLEMENTATION***********
  *****************************************************/
 void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
-	static bool initiliazed = false;
-	if(initiliazed) return;
-
+	static bool initiliazed[FTM_AMOUNT_MODULES] = {0, 0, 0, 0};
+	if(initiliazed[module]) return;
 
 	if (module == FTM_0)
 		SIM->SCGC6 |= SIM_SCGC6_FTM0_MASK;	//Clock Gating
@@ -59,7 +58,7 @@ void ftm_init(ftm_modules_t module, ftm_prescaler_t prescaler_config){
 	ftm_set_prescaler(module, prescaler_config);
 //	conf_port(module);
 
-	initiliazed = true;
+	initiliazed[module] = true;
 }
 
 
@@ -206,8 +205,11 @@ void ftm_conf_port(ftm_modules_t module, ftm_channel_t channel){
 		// Enable or disable internal pull resistor
 		PORTC->PCR[1] &= ~PORT_PCR_PE_MASK;
 	}
-	else if(module == FTM_1){
-
+	else if(module == FTM_2){
+		SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
+		PORTB->PCR[18] = PORT_PCR_SRE(0) | PORT_PCR_PFE(0) |
+						PORT_PCR_ODE(0) | PORT_PCR_DSE(0) | PORT_PCR_PS (2U) |
+						PORT_PCR_MUX(3) | PORT_PCR_LK (0) | PORT_PCR_IRQC(0);
 	}
 }
 

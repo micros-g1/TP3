@@ -9,6 +9,8 @@
 #include "FTM/flex_timer.h"
 #include <FSK/fsk.h>
 #include "MK64F12.h"
+#include "gpio.h"
+
 
 #define FREQ_1      1200.0
 #define FREQ_0      2200.0
@@ -52,10 +54,13 @@ void fsk_rx_init(fsk_v2_callback_t fsk_callback){
 
 	//pin PTC1
 	ftm_init(FTM_0, FTM_PSC_x1);
-	ftm_input_capture_config_t input_conf = {.channel=FTM_CHNL_0, .mod=((1<<16)-1),.mode=FTM_IC_BOTH_EDGES, .filter_value=0x00, .callback=fsk_rx_process_sample_v2};
+	ftm_input_capture_config_t input_conf = {.channel=FTM_CHNL_0, .mod=((1<<16)-1),.mode=FTM_IC_RISING_EDGE, .filter_value=0x00, .callback=fsk_rx_process_sample_v2};
 	ftm_set_input_capture_conf(FTM_0, input_conf);
 	ftm_conf_port(FTM_0, FTM_CHNL_0);
 	ftm_enable_clock(FTM_0, true);
+
+
+	gpioMode(PORTNUM2PIN(PC, 16), OUTPUT); // debug
 }
 
 void fsk_rx_process_sample_v2(uint16_t elapsed_time){
@@ -63,24 +68,26 @@ void fsk_rx_process_sample_v2(uint16_t elapsed_time){
     static uint32_t curr_bit = 0;
     static uint8_t word_received = 0;
     static bool curr_parity = true;
-    static bool first_zero_trigger = false;
+    static bool ignore_next = false;
 
+
+    gpioWrite(PORTNUM2PIN(PC, 16), HIGH);
+    ftm_reset_counter_value(FTM_0);
     if (idle) {
     	if(elapsed_time <= T0 + SYMBOL_TOL){	//check if counter_value <= T0 + tolerance
 			idle = false;
 			curr_bit = 0;
 			word_received = 0;
 			curr_parity = true;
-			first_zero_trigger = true;
+			ignore_next = true;
     	}
     }
     else {
-    	bool newest_bit;
-    	if( (first_zero_trigger = !first_zero_trigger) ){
-    		if( ( newest_bit = (elapsed_time <= T0 + SYMBOL_TOL) ) ){
-    			first_zero_trigger = true;
-    		}
+    	if( !ignore_next ){
+        	bool newest_bit = (elapsed_time > T0 + SYMBOL_TOL);
+    		ignore_next = !newest_bit;
 			curr_bit++;
+
 			if (curr_bit == 9) {
 				if (curr_parity != newest_bit) { // error!
 					idle = true;
@@ -104,9 +111,13 @@ void fsk_rx_process_sample_v2(uint16_t elapsed_time){
 				curr_parity ^= newest_bit;
 			}
     	}
+    	else {
+    		ignore_next = false;
+    	}
     }
 
-	ftm_reset_counter_value(FTM_0);
+    gpioWrite(PORTNUM2PIN(PC,16), LOW);
+//	ftm_reset_counter_value(FTM_0);
 }
 
 void hola(){

@@ -20,8 +20,8 @@
 
 #define FSK_VERSION	2	// if not 1 will assume 2
 
-#define FSK_TX_QUEUE_SIZE 16
-#define FSK_RX_QUEUE_SIZE 16
+#define FSK_TX_QUEUE_SIZE 255
+#define FSK_RX_QUEUE_SIZE 255
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
